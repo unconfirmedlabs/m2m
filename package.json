@@ -7,7 +7,8 @@
     "typecheck": "tsc --noEmit",
     "vectors": "tsx scripts/verify-vectors.ts",
     "channel-vectors": "tsx scripts/verify-channel-vectors.ts",
-    "channel-journals": "tsx scripts/test-channel-recovery.ts"
+    "channel-journals": "tsx scripts/test-channel-recovery.ts",
+    "message-examples": "python3 scripts/message-examples.py --check && cargo test --locked --test message_examples"
   },
   "dependencies": {
     "@mysten/sui": "2.30.0",

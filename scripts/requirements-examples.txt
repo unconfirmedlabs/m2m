@@ -1,0 +1,2 @@
+# JSON Schema draft 2020-12 validation for public message examples.
+jsonschema==4.10.3

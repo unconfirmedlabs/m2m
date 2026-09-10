@@ -1,0 +1,225 @@
+{
+  "format_version": 1,
+  "synthetic": true,
+  "notice": "Offline examples from public signing vectors. Object IDs, network, times and digests are synthetic; do not fund the test keys.",
+  "profiles": {
+    "channel": {
+      "alpn": "m2m/payment/1",
+      "method": "sui.channel.v1",
+      "schema": "../../schemas/channel-v1.schema.json"
+    },
+    "escrow": {
+      "alpn": "m2m/fixture/1",
+      "schema": "../../schemas/exchange-v1.schema.json"
+    }
+  },
+  "examples": [
+    {
+      "file": "channel/payment.offer_request.json",
+      "profile": "channel",
+      "type": "payment.offer_request",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Request a ten-job ceiling; this walkthrough closes after one job."
+    },
+    {
+      "file": "channel/payment.offer.json",
+      "profile": "channel",
+      "type": "payment.offer",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Signed provider terms before the buyer funds the channel."
+    },
+    {
+      "file": "channel/session.resume.json",
+      "profile": "channel",
+      "type": "session.resume",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Admit or resume the synthetic funded channel."
+    },
+    {
+      "file": "channel/session.ready.json",
+      "profile": "channel",
+      "type": "session.ready",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Freshly admitted; no credit has been issued."
+    },
+    {
+      "file": "channel/payment.authorize.json",
+      "profile": "channel",
+      "type": "payment.authorize",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Preauthorize job-0001 for 1,000 MIST cumulative."
+    },
+    {
+      "file": "channel/payment.acknowledge.json",
+      "profile": "channel",
+      "type": "payment.acknowledge",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Acknowledge durable credit receipt; this does not prove delivery or payment."
+    },
+    {
+      "file": "channel/work.get.json",
+      "profile": "channel",
+      "type": "work.get",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Retrieve the exact request already backed by a saved credit."
+    },
+    {
+      "file": "channel/work.result.json",
+      "profile": "channel",
+      "type": "work.result",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Return the fixture bytes and their signed request/credit binding."
+    },
+    {
+      "file": "channel/payment.close.json",
+      "profile": "channel",
+      "type": "payment.close",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Propose an early close after one completed job."
+    },
+    {
+      "file": "channel/payment.close_acknowledge.json",
+      "profile": "channel",
+      "type": "payment.close_acknowledge",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Countersign the close after freezing; the buyer submits it separately to Sui."
+    },
+    {
+      "file": "channel/payment.settlement.json",
+      "profile": "channel",
+      "type": "payment.settlement",
+      "direction": "buyer_to_provider",
+      "runtime_status": "specified_only",
+      "variant": false,
+      "summary": "Specified post-submission hint. No runtime sender/handler exists; digest is synthetic."
+    },
+    {
+      "file": "channel/error.json",
+      "profile": "channel",
+      "type": "error",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Alternative failure branch: the same request conflicts with saved credit."
+    },
+    {
+      "file": "channel/session.ready.resumed.json",
+      "profile": "channel",
+      "type": "session.ready",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": true,
+      "summary": "Restart after one result, before closing; no funds redeemed yet."
+    },
+    {
+      "file": "channel/session.ready.frozen.json",
+      "profile": "channel",
+      "type": "session.ready",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": true,
+      "summary": "Close certificate saved; onchain settlement has not yet been observed."
+    },
+    {
+      "file": "channel/session.ready.closed.json",
+      "profile": "channel",
+      "type": "session.ready",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": true,
+      "summary": "Cooperative-close branch: 1,000 MIST paid and 11,000 refunded."
+    },
+    {
+      "file": "channel/session.ready.refunded.json",
+      "profile": "channel",
+      "type": "session.ready",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": true,
+      "summary": "Alternative branch: unilateral 1,000-MIST redemption followed by residual expiry refund."
+    },
+    {
+      "file": "escrow/request.quote.json",
+      "profile": "escrow",
+      "type": "quote",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Request the fixture quote."
+    },
+    {
+      "file": "escrow/response.quote.json",
+      "profile": "escrow",
+      "type": "quote",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Sign 1,000-MIST escrow terms."
+    },
+    {
+      "file": "escrow/request.deliver.json",
+      "profile": "escrow",
+      "type": "deliver",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Retrieve the funded fixture."
+    },
+    {
+      "file": "escrow/response.result.json",
+      "profile": "escrow",
+      "type": "result",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Return fixture bytes."
+    },
+    {
+      "file": "escrow/request.accept.json",
+      "profile": "escrow",
+      "type": "accept",
+      "direction": "buyer_to_provider",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Sign acceptance after verifying the delivered fixture."
+    },
+    {
+      "file": "escrow/response.settled.json",
+      "profile": "escrow",
+      "type": "settled",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Implemented settlement response; this illustrative digest is not a chain transaction."
+    },
+    {
+      "file": "escrow/response.error.json",
+      "profile": "escrow",
+      "type": "error",
+      "direction": "provider_to_buyer",
+      "runtime_status": "implemented",
+      "variant": false,
+      "summary": "Alternative error branch; reconcile before taking economic action."
+    }
+  ]
+}

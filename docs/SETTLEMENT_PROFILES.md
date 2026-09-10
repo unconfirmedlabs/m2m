@@ -9,6 +9,13 @@ Sui and Iroh remain required foundations.
 The existing fixture escrow and its published testnet package implement profile
 0.1 in [PROTOCOL.md](PROTOCOL.md).
 
+The [message catalog](../examples/messages/README.md) provides exact examples of
+both implemented profiles, including the declared but unhandled channel
+`payment.settlement` hint. The later [native core proposal](CORE_MESSAGE_PROPOSAL.md)
+separates general peer messaging from optional payment-profile semantics. Here,
+"core payment vocabulary" means a first-party category, not compulsory payment
+for every conversation; this decision record is not a generic core wire spec.
+
 ## Recommendation
 
 Make payment communication part of m2m's core vocabulary. Implement payment

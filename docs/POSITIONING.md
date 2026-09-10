@@ -1,9 +1,16 @@
 # m2m positioning and problem definition
 
-m2m's proposed proposition is: **connect autonomous software over Iroh and make
-its economic agreements executable on Sui.** The research supports investigating
-this integration. It does not yet establish customer demand or prove that a new
-standalone wire protocol is necessary.
+m2m's direction is to build **a new foundational standard for autonomous software
+to communicate and transact: durable Sui identities, Iroh connectivity, native
+messages, and programmable economic agreements.** The user selected this direction
+on 2026-09-10 after reviewing alternatives. Existing agent protocols may integrate
+above m2m or through adapters; they are not required bases.
+
+This is a product and architecture decision, not evidence of adoption. The current
+implementation proves a narrower paid-exchange mechanism. Customer demand, the
+smallest useful native core, and production guarantees still need validation.
+See the [current examples](../examples/messages/README.md) and the separate
+[draft core proposal](CORE_MESSAGE_PROPOSAL.md).
 
 The [PoC scope](POC_SCOPE.md) makes this hypothesis concrete: one
 fixed-price service exchange between known operators, transported over Iroh and
@@ -25,6 +32,7 @@ Actual ZK proofs and a production customer workflow remain separate decisions.
 
 | Decision | Status | Rationale |
 |---|---|---|
+| Build a new foundational m2m standard with native semantics | Accepted, 2026-09-10 | Give autonomous software a common communication and economic foundation; allow optional higher-level protocols and adapters |
 | Use Iroh for transport | Accepted, 2026-09-10 | Connect software across changing networks using authenticated endpoints |
 | Use Sui for economic programmability | Accepted, 2026-09-10 | Express economic authority, ownership, conditions, and settlement in programmable state |
 | Build on their shared Ed25519 support | Accepted motivation, 2026-09-10 | Common signature primitives make a direct cryptographic binding feasible |
@@ -52,7 +60,9 @@ needs to know which agreed condition lets it receive payment.
 
 Existing protocols and libraries supply many of these pieces. The hypothesis is
 that integrating them correctly still creates enough recurring work to justify a
-small common protocol/profile and SDK. This must be tested with developers; a
+small common core, optional profiles, and SDKs. The intended core also supports
+unpaid communication; a funded agreement must not be a prerequisite for contacting
+a peer or exchanging application messages. This must be tested with developers; a
 landscape survey cannot establish the size or frequency of that pain.
 
 ## Candidate first participants
@@ -86,7 +96,7 @@ comparison. The assessments here are proposed product judgments.
 |---|---|---|
 | MCP plus a service's existing authentication and billing | Tool integration into existing agent clients | Useful economic coordination and Iroh connectivity with little integration work |
 | A2A over HTTPS plus OAuth and an established payment scheme | Task coordination, standard endpoints, and composable authorization/payments | A concrete advantage for independently operated peers and programmable Sui terms |
-| A2A semantics with an Iroh binding and Sui economic extensions | A credible way to compose the required stack | Whether this is sufficient; if so, a profile/SDK may be the appropriate deliverable |
+| A2A semantics with an Iroh binding and Sui economic extensions | A credible alternative composition and potential interoperability path | Where a native m2m core improves integration or guarantees, and what an optional adapter must preserve |
 | x402 or another payment protocol plus Sui | Programmatic payment requirements and settlement integration | More than attaching a transaction digest to a request: clear agreement, authority, and recovery semantics |
 | ANP or existing decentralized identity standards | Decentralized identity and discovery approaches | Specific Sui/Iroh economic behavior and a better integration experience |
 | Tailscale/service identity plus APIs and existing billing | Mature private connectivity and workload/service identity patterns | Why the intended cross-operator economic workflow benefits from m2m |
@@ -96,25 +106,27 @@ The strongest competitor is often a composition of these tools. Benchmark agains
 that composition. Keeping Sui and Iroh fixed does not mean every layer above them
 must be new.
 
-## Proposed scope
+## Scope for the foundational standard
 
-The smallest promising scope is a shared contract connecting four things:
+The proposed architecture connects five things:
 
 1. A durable agent and its currently authorized endpoint.
-2. An identifiable agreement with exact economic terms and authority.
-3. A work request/result reference understood by the application or an existing task protocol.
-4. An enforceable Sui economic transition and a recoverable outcome.
+2. Negotiated protocol features and general correlated messages, without compulsory payment.
+3. An optional identifiable agreement with exact economic terms and authority.
+4. A work request/result reference understood by a native profile, application, or adapter.
+5. An enforceable Sui economic transition and a recoverable outcome when payment is involved.
 
-That scope could become a protocol binding and economic profile, an SDK with a
-small common envelope, or a distinct protocol if existing extension mechanisms
-prove insufficient. Prefer the option that preserves interoperability and keeps
-the mandatory surface small. Do not decide its encoding, task model, or object
-schema solely to make a demo convenient.
+The deliverable is a native protocol with a small mandatory core and optional
+profiles. The [core proposal](CORE_MESSAGE_PROPOSAL.md) explores that boundary;
+its names and wire sketches are not yet a released contract. Preserve existing
+PoC formats until a versioned migration is specified. Do not decide encoding,
+task state, or object schemas solely to make a demo convenient.
 
 Keep the longer-term possibilities visible: constrained budgets, escrow, metered
 payments, recurring relationships, rights/access, and delegation among multiple
-workers. Select one economic primitive for the initial validation. Implementing
-all of them at once would obscure which problem creates demand.
+workers. The existing escrow and channel methods are the economic baseline.
+Select further primitives against concrete workflows; implementing all of them at
+once would obscure which problem creates demand.
 
 ## What shared Ed25519 contributes
 
@@ -145,11 +157,13 @@ The underlying facts and exact address distinctions are sourced in
 | A reusable protocol is justified | At least two independent applications need the same semantics | Only one tightly coupled application needs them |
 
 These tests can narrow the audience or protocol scope while retaining the accepted
-Sui and Iroh foundations. They are not permission gates for routine research work.
+foundational-standard direction, Sui, and Iroh. They are not permission gates for
+routine research or implementation work.
 
 ## Decisions for the positioning discussion
 
-Before the proof of concept, settle:
+The fixed-file PoCs already establish a technical baseline. For the next usable
+protocol iteration, settle:
 
 1. **The first exchange:** who buys what service from whom, and where does it run?
 2. **The repeated pain:** what current integration or failure makes that exchange hard?
@@ -158,13 +172,13 @@ Before the proof of concept, settle:
 5. **The integration surface:** which existing client, task protocol, or service will adopt m2m first?
 6. **The success threshold:** what measured improvement and failure behavior would justify continuing?
 
-A useful first discussion can settle the first three, then choose the smallest
-trust and interoperability model that supports them. The proof of concept should
-test that chosen hypothesis, rather than become an implicit protocol specification.
+A useful next discussion can settle the first three, then choose the smallest
+trust model and native profile that supports them. The fixtures should inform
+the standard without making a paid fixed-file exchange its universal message model.
 
-## Suggested later proof-of-concept criteria
+## Criteria for the next usable iteration
 
-Once the positioning is agreed, a bounded technical experiment should demonstrate
+A bounded next iteration should demonstrate
 an actual exchange between separately running peers, an authenticated binding to
 the relevant Sui authority, and enforcement of the selected economic rule. It
 should also demonstrate an applicable failure case such as duplicate submission,

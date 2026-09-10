@@ -13,6 +13,11 @@ workflow. This is a capability review, not a new security audit or a new funded
 experiment. The [comparative review](M2M_COMPARATIVE_REVIEW.md) places these findings
 beside other protocols.
 
+The [message example catalog](../../examples/messages/README.md) now supplies exact
+JSON for every declared shape and additional recovery states. The separate
+[native core proposal](../CORE_MESSAGE_PROPOSAL.md) describes future messages;
+it does not expand the implemented inventory below.
+
 ## Channel messages
 
 The channel profile uses Iroh ALPN `m2m/payment/1`, method `sui.channel.v1`, and

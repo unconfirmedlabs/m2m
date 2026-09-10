@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "method": "sui.channel.v1",
+  "buyer": "0x0505050505050505050505050505050505050505050505050505050505050505",
+  "provider": "0x0606060606060606060606060606060606060606060606060606060606060606",
+  "agreement_id": "0x0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a",
+  "request_id": "",
+  "message": {
+    "type": "session.ready",
+    "phase": "active",
+    "highest_credit": null,
+    "completed_jobs": "0",
+    "transcript_hash": [208, 172, 26, 18, 223, 246, 70, 197, 129, 26, 17, 227, 85, 196, 15, 35, 185, 51, 231, 17, 55, 193, 227, 249, 38, 111, 89, 186, 64, 120, 36, 131],
+    "certificate": null,
+    "redeemed_amount": "0"
+  }
+}

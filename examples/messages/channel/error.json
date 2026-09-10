@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "method": "sui.channel.v1",
+  "buyer": "0x0505050505050505050505050505050505050505050505050505050505050505",
+  "provider": "0x0606060606060606060606060606060606060606060606060606060606060606",
+  "agreement_id": "0x0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a",
+  "request_id": "job-0001",
+  "message": {
+    "type": "error",
+    "code": "conflict",
+    "message": "conflicting repeated credit"
+  }
+}

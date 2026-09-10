@@ -22,6 +22,13 @@ The [north star](../NORTH_STAR.md) and [positioning](../POSITIONING.md) remain t
 project's governing direction. Recommendations below are proposals for discussion;
 they do not change the requirements or adopt a new protocol architecture.
 
+**Direction update, 2026-09-10:** after this review, the user selected a new
+foundational m2m standard with native semantics. The comparisons and implemented
+capability findings below remain a dated baseline; the A2A-binding recommendation
+is an alternative considered, not the selected foundation. See the
+[core proposal](../CORE_MESSAGE_PROPOSAL.md) and
+[current message examples](../../examples/messages/README.md).
+
 ## What m2m actually implements
 
 The [message inventory](M2M_MESSAGE_INVENTORY.md) supplies the full wire table,

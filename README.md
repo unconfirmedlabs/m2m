@@ -1,7 +1,17 @@
 # m2m
 
-Economic coordination for autonomous software, using **Iroh for transport** and
-**Sui for economic programmability**.
+A new foundational standard for autonomous software to communicate and transact,
+using **Iroh for transport** and **Sui for identity and economic programmability**.
+This is the project direction; the implementation is currently a paid-exchange
+proof of concept. An agent can be an ordinary process, service, or device.
+
+**[Explore every current message](examples/messages/README.md)** ·
+[Draft core messaging design](docs/CORE_MESSAGE_PROPOSAL.md)
+
+The examples cover all 12 channel messages and all 7 escrow request/response
+shapes, with recovery variants. Channel `payment.settlement` is specified but has
+no runtime sender or handler. General messaging and service descriptions are
+proposed next steps, separate from the current wire formats.
 
 The proof of concept exchanges a fixed test file between two processes over Iroh.
 The optional `sui.channel.v1` method reserves one Sui deposit, carries cumulative
@@ -43,8 +53,10 @@ The [Fly experiment](docs/FLY_POC.md) runs separate buyer/provider machines in
 Ashburn and Sydney. Cross-region relay transport is verified; direct public-IP
 routing was unavailable under the default Fly network configuration.
 
-The first real customer workflow remains open. This is an experimental protocol
-profile for known counterparties, using localnet/testnet funds.
+The first real customer workflow remains open. The current experimental payment
+profiles serve known counterparties, using localnet/testnet funds. The intended
+core will support communication without requiring a funded agreement; payment
+methods and optional integrations such as A2A will build on that foundation.
 
 Start with the [positioning and problem definition](docs/POSITIONING.md), then
 read the [north star](docs/NORTH_STAR.md) and the

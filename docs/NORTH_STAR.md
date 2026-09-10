@@ -1,14 +1,16 @@
 # m2m north star
 
-m2m should make it practical for independently operated software to communicate
-over Iroh and coordinate economic activity through Sui under explicit, verifiable
-terms. The first implementation should earn adoption through one useful workflow
-and a small integration surface.
+m2m is building a new foundational standard that makes it practical for independently
+operated software to communicate over Iroh and coordinate economic activity through
+Sui under explicit, verifiable terms. The first implementation should earn adoption
+through one useful workflow and a small integration surface.
 
-Sui and Iroh are accepted foundations. The authorized proof of concept implements
+The foundational-standard direction, Sui, and Iroh are accepted requirements.
+The authorized proof of concept implements
 a fixed-file exchange to test transport authentication and economic settlement.
-The initial audience, production protocol, and compatibility profile remain open
-positioning decisions. This document contains engineering guidance; a working
+The initial audience, exact core contract, and optional compatibility adapters remain
+open decisions. m2m will have native semantics; an existing agent protocol is not
+a mandatory base. This document contains engineering guidance; a working
 technical experiment does not establish market demand.
 
 The evidence behind these principles is in the [protocol survey](research/AGENT_PROTOCOLS.md).
@@ -17,6 +19,9 @@ The [PoC scope](POC_SCOPE.md) applies these principles to a paid service
 exchange and separates technical validation from use-case evidence.
 The [channel specification](CHANNEL_SPEC.md) extends that fixture to repeated
 purchases under one deposit, with its prepayment and recovery rules stated explicitly.
+The [current message examples](../examples/messages/README.md) document that
+contract. The [core message proposal](CORE_MESSAGE_PROPOSAL.md) is a separate draft
+for the next iteration, not a change to existing wire or signing formats.
 
 ## 1. Make the benefit concrete
 
@@ -37,7 +42,8 @@ outcomes. This applies the deployment and incentive lessons in RFC 5218.[^1]
 | Layer | Intended responsibility | Boundary |
 |---|---|---|
 | Application | Produce useful work and interpret its domain-specific quality | May use an LLM, conventional service, or device controller |
-| m2m | Bind peers, authority, agreed terms, work references, and economic outcomes | Reuse existing semantics where they fit; specify the missing binding |
+| m2m core | Bind durable peers to authorized endpoints; negotiate features; exchange correlated messages | Native, application-neutral communication without a required payment agreement |
+| m2m profiles | Define work lifecycles, economic agreements, and recoverable outcomes | Optional contracts with explicit guarantees; the current PoC implements payment profiles |
 | Iroh | Authenticated encrypted communication and connection establishment | Endpoint authentication does not grant spending rights |
 | Sui | Durable economic state, ownership, programmable permissions, and settlement | Onchain execution cannot itself establish arbitrary offchain work quality |
 
@@ -45,9 +51,11 @@ Keep prompts, model selection, memory, planning, and internal tools outside the
 mandatory protocol. Integration should be possible through an SDK or adapter
 without adopting an entire runtime.
 
-Identity-only messaging would not demonstrate the intended proposition. The
-proof of concept must exercise at least one actual Sui economic rule alongside
-Iroh communication, with its trust model stated.
+The core should permit unpaid communication, while retaining Sui identity and
+Iroh transport as requirements. The existing economic proof of concept exercises
+actual Sui rules alongside Iroh communication. Use that evidence to design the
+payment profile boundary; a generic message receipt cannot acquire settlement
+meaning implicitly.
 
 ## 3. Use Ed25519 compatibility precisely
 
@@ -104,21 +112,23 @@ policies are enforced by Move, by a local signer, or by the counterparty. A budg
 field is not an enforced budget unless an identified component rejects excess
 spending on every applicable path.
 
-## 5. Reuse protocols at their natural boundaries
+## 5. Build a native core with explicit interoperability boundaries
 
-Assess MCP for tool access, A2A for external work/task semantics, and existing
-authorization/payment standards for appropriate profiles. Coding-client and UI
-protocols concern application integrations. They do not need to become mandatory
-dependencies of a machine-to-machine economic protocol.
+Design m2m as the foundation for peer communication, identity binding, and economic
+coordination. Learn from MCP's tool boundary, A2A's work/task semantics, and
+authorization/payment standards when specifying native profiles. Applications may
+use those protocols above m2m or through adapters. None is a mandatory dependency
+of the core, and m2m participation must not require an LLM.
 
 For every extension or adapter, write down the upstream version, preserved
 semantics, authentication boundary, and failure mapping. Existing HTTP clients
 will not automatically speak a custom Iroh binding. A gateway changes who sees
 traffic and who authenticates whom; document that change.
 
-Choose between an existing-protocol binding, a constrained profile, an adapter,
-and new wire semantics by proving what is missing. Do not create a second task
-state machine just to attach a Sui payment reference.
+Keep the native mandatory contract small. Add task state, delegation, or streaming
+only with defined transitions, failure behavior, and independent implementation
+examples. An adapter must preserve the upstream contract before claiming
+compatibility; carrying an opaque payload alone is not A2A conformance.
 
 ## 6. Make uncertainty a protocol concern
 

@@ -2,7 +2,9 @@
 
 ## Project context
 
-m2m explores economic coordination between autonomous software. **Iroh is the
+m2m is building a new foundational standard for communication and economic
+coordination between autonomous software. This is the accepted project direction;
+the present implementation is a narrower paid-exchange proof of concept. **Iroh is the
 required transport; Sui is the required layer for economic programmability.**
 Their common Ed25519 support is an integration advantage. Preserve these choices
 unless the user changes them.
@@ -15,6 +17,8 @@ must not require an LLM or a particular agent framework.
 
 - [North star](docs/NORTH_STAR.md): design principles and architectural boundaries.
 - [Positioning](docs/POSITIONING.md): problem hypothesis, alternatives, and open decisions.
+- [Message examples](examples/messages/README.md): every current wire message, with checked signatures and explicit implementation status.
+- [Core message proposal](docs/CORE_MESSAGE_PROPOSAL.md): draft native messaging foundation; not implemented or a released wire contract.
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
 - [Payment messages and settlement methods](docs/SETTLEMENT_PROFILES.md): core payment vocabulary and optional cumulative channels; actual ZK proofs are a separate future method.
 - [Channel specification](docs/CHANNEL_SPEC.md) and [implementation plan](docs/CHANNEL_IMPLEMENTATION_PLAN.md): exact signing, recovery, and acceptance contract for the channel PoC.
@@ -38,8 +42,11 @@ explicit guarantees of the selected settlement method.
 
 1. Start with a named participant, a concrete workflow, and a measurable failure
    in the best existing alternative. Technology fit alone does not establish demand.
-2. Keep Sui economic programmability and Iroh transport central. Evaluate existing
-   task, tool, authorization, and payment standards before creating new semantics.
+2. Keep Sui economic programmability and Iroh transport central. Design a small
+   native m2m core, learning from existing task, tool, authorization, and payment
+   standards. A2A and other protocols may integrate above it or through adapters;
+   they are not mandatory foundations. General communication must be possible
+   without opening a payment agreement; economic authority stays explicit.
 3. Distinguish service descriptions, negotiated protocol features, delegated
    permissions, and evidence about performance. Do not put them all under an
    ambiguous `capabilities` label.
@@ -59,6 +66,10 @@ explicit guarantees of the selected settlement method.
 10. Record important decisions with rationale, alternatives, status, and evidence.
     Mark proposed positioning and untested hypotheses honestly; do not silently
     promote them to accepted requirements.
+11. Maintain examples for every declared message and meaningful failure/recovery
+    branches. Validate schemas, signatures, and cross-message references. Keep
+    design sketches separate from current wire fixtures; schema presence alone
+    does not demonstrate a runtime sender or handler.
 
 ## Research and documentation
 
