@@ -116,12 +116,17 @@ implementation. Dependency resolutions are pinned in the three lockfiles.
 ```bash
 node --import tsx scripts/setup.ts --state .m2m/testnet --network testnet
 python3 scripts/demo.py --root .m2m/testnet --count 1 --failures
+python3 scripts/demo.py --root .m2m/testnet --count 1 --relay-only
 ```
 
 If the public faucet rate-limits the server, fund the generated deployer address
 with test SUI and rerun setup. About 1 test SUI is sufficient for setup and a few
 jobs. Setup distributes 0.2 test SUI to each of the three role wallets. Use only
 testnet funds. Localnet and testnet state directories must be separate.
+
+These commands passed against public testnet on 2026-09-10. See the
+[validation record](VALIDATION.md#public-testnet) for deployment IDs, transaction
+evidence, costs, and the distinction between same-server and two-network testing.
 
 For different hosts, give each operator its own private role state and a public
 copy of `chain.json`. Share only the provider ticket and Agent ID. Add `--relay`

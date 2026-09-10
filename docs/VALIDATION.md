@@ -6,12 +6,13 @@ server. They establish technical behavior, not demand for a real paid service.
 ## Environment
 
 - Rust 1.97.1; Iroh 1.2.0; Node 22.23.2; Sui TypeScript SDK 2.30.0.
-- Sui CLI 1.79.0, with a persistent single-validator local network and gRPC RPC.
+- Sui CLI 1.79.0, with a persistent single-validator local network and gRPC RPC;
+  public Sui testnet through its official gRPC endpoint.
 - Separate buyer/provider processes, Agent objects, endpoint keys, controller
   wallets, and a provider gas wallet. No GPU or model server.
 - Exact dependency resolutions are recorded in Cargo, npm, and Move lockfiles.
 
-## Completed checks
+## Localnet and offline checks
 
 | Check | Result |
 |---|---|
@@ -41,7 +42,7 @@ The independent TypeScript verifier is not a second full m2m implementation.
 The forced-relay run proves a relay path works for these endpoints; it is not a
 test between different operators' networks or a general NAT/firewall claim.
 
-## Measurements
+## Localnet measurements
 
 Ten sequential direct-path purchases on the same server, including fresh buyer
 process startup, chain reads, quote, funding, file delivery, acceptance, and
@@ -83,12 +84,47 @@ settlement. A timed-out purchase requires funding and refund instead. Package
 publication, Domain creation, and Agent registration are separate setup costs;
 quoting and file delivery require no transactions.
 
+## Public testnet
+
+Completed 2026-09-10 against implementation commit `6fbb6c6`. The faucet's earlier
+HTTP 429 was resolved by funding the deployer with 1 test SUI. The existing setup
+script distributed funds, published the package, and registered both Agents.
+
+Published package:
+`0x0f369cb04d9f0e1c13ef330cbba0f0e5ee168b47926557ec73401356e5dbf192`.
+The [public evidence snapshot](validation/testnet-2026-09-10.json) includes the
+Domain and Agent IDs, build hash, all transaction digests/checkpoints, job outcomes,
+recipient credits, and remaining role-wallet balances, checked at 12:40:22 UTC.
+
+One baseline purchase and all six recovery scenarios passed: lost funding
+reference, buyer restart after acceptance, provider restart after storing the
+result, lost settlement reply, timeout refund, and an RPC outage. A second
+purchase passed with direct IP transports disabled on both Iroh endpoints. Its
+three connections used relay paths. Both processes still ran on the same server.
+
+Fresh reads of the completed escrows, nonce mappings, and transaction
+effects confirmed seven settlements and one refund. Each terminal transaction
+credited its fixed recipient exactly 1,000 MIST; all eight escrows held zero
+remaining funds. All 23 transactions, including setup, were checkpointed.
+
+| Measurement | Observed |
+|---|---|
+| Baseline direct purchase wall time, one sample | 18,318 ms |
+| Forced-relay purchase wall time, one sample | 18,454 ms |
+| Median funding operation, eight samples | 3,283.5 ms |
+| Median settlement operation, seven samples | 3,088 ms |
+| Median uncached service result plus persistence, seven samples | 1,513 µs |
+| Net gas for setup and all eight jobs | 0.1208082 test SUI |
+| Remaining across the four role wallets | 0.8791918 test SUI |
+| Open funded escrows | 0 |
+
+These are small same-server samples with public-chain access, including adapter
+startup and validation reads. They do not establish a direct-versus-relay latency
+advantage. The remaining wallet balances plus total net gas equal the original
+1 test SUI; payments and refunds moved funds between the same role wallets.
+
 ## Remaining evidence
 
-- **Public testnet:** the RPC is reachable and reports testnet, but the faucet
-  rejected funding with HTTP 429. No testnet deployment or paid exchange has been
-  confirmed. Setup can resume with the existing generated deployer wallet once
-  it has test SUI.
 - **Two actual networks:** not run. A second host on a different network is needed.
 - **Independent onboarding:** the 30-minute quickstart target has not been tested
   by a developer other than the implementer.
@@ -103,7 +139,8 @@ security audit, reputation system, dispute resolution, or arbitrary-work proof.
 
 ## Reproduce
 
-Use [QUICKSTART.md](QUICKSTART.md). Local raw receipts, transaction attempts,
-measurements, and process logs are under `.m2m/local` in the implementer's workspace.
-They are intentionally not committed because that tree also contains private
-keys. The harness regenerates equivalent evidence against a fresh local deployment.
+Use [QUICKSTART.md](QUICKSTART.md). Raw receipts, transaction attempts, measurements,
+and process logs are under `.m2m/local`, `.m2m/demo`, and `.m2m/testnet` in the
+implementer's workspace. Those trees contain private keys and remain gitignored.
+The committed testnet snapshot contains selected public chain evidence. The
+harness regenerates equivalent evidence against a fresh deployment.

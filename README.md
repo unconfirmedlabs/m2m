@@ -25,6 +25,10 @@ sequenceDiagram
 **[Run the PoC](docs/QUICKSTART.md)** · [Protocol](docs/PROTOCOL.md) ·
 [Validation and limits](docs/VALIDATION.md)
 
+The fixture and recovery scenarios have passed on local Sui and public testnet,
+including forced Iroh relay transport. Testing across two actual networks remains
+outstanding; see the [testnet evidence](docs/VALIDATION.md#public-testnet).
+
 The first real customer workflow remains open. This is an experimental protocol
 profile for known counterparties, using localnet/testnet funds.
 

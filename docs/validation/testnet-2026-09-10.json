@@ -1,0 +1,392 @@
+{
+  "checked_at_utc": "2026-09-10T12:40:22.406Z",
+  "source_commit": "6fbb6c68fc6c3b23cafa4ced800966d2f7991e56",
+  "chain": {
+    "rpc_url": "https://fullnode.testnet.sui.io:443",
+    "network": "testnet",
+    "chain_id": "69WiPg3DAQiwdxfncX6wYQ2siKwAe6L9BZthQea3JNMD",
+    "package_id": "0x0f369cb04d9f0e1c13ef330cbba0f0e5ee168b47926557ec73401356e5dbf192",
+    "deployment": "0x6cfa8aa1e4bc216d18e470fc58138e65cb1b399365eb2c8fbeb3e59428ecef29"
+  },
+  "build_sha256": "085c3d0067190a30fc4dc11bfafc509c7b1ca5f72f7ee8a6e3153fe97cbd1223",
+  "agents": {
+    "buyer": "0xedfa9068c234699f15e13327efbeed02d944530a6572ad21e5662fde64ebccbf",
+    "provider": "0x72295f73598d7b0408604f4cc49a262e57f6755978e739b81dbd37e165d7751a"
+  },
+  "transport": {
+    "hosts": 1,
+    "default_direct_run": true,
+    "forced_relay_run": true,
+    "relay_connections": 3,
+    "two_network_test": false
+  },
+  "verification": {
+    "all_transactions_checkpointed": true,
+    "all_nonce_mappings_match": true,
+    "all_recipient_credits_equal_price": true,
+    "settled": 7,
+    "refunded": 1,
+    "open_escrows": 0,
+    "transactions": 23,
+    "total_net_gas_mist": "120808200",
+    "remaining_wallet_balance_mist": "879191800"
+  },
+  "wallets": [
+    {
+      "role": "deployer",
+      "address": "0x062db5f5675ec2994fcdd1e5c743a53c958c07187e460d8376c480f320afd71b",
+      "balance_mist": "363566400"
+    },
+    {
+      "role": "buyer-controller",
+      "address": "0x55096254869484f9cc14d64c89b2287885fffe6a4a158fbe28370a710a5830c3",
+      "balance_mist": "137312680"
+    },
+    {
+      "role": "provider-controller",
+      "address": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "balance_mist": "196603120"
+    },
+    {
+      "role": "provider-gas",
+      "address": "0x9c88105f84cba31e698d42ebca0b3841e28f44defaa4090eb724548bd3d1247e",
+      "balance_mist": "181709600"
+    }
+  ],
+  "jobs": [
+    {
+      "request_id": "0ed536c448-purchase-0",
+      "nonce": "0",
+      "escrow": "0x6444b606bff13680e4d51b8a6ae4cecc31c41ae2f8ce84e50a4ba22a53266531",
+      "amount_mist": "1000",
+      "funding_transaction": "2qdGfkJog68B7zdtspvt6HzhFK11vjBVrKJ32AT5bY9g",
+      "status": "settled",
+      "terminal_transaction": "4i1q9YDEML9R6dtaYAAdxnSRxCL5S1xkJyvZfxZA4sYW",
+      "escrow_balance_mist": "0",
+      "recipient": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "recipient_credit_mist": "1000"
+    },
+    {
+      "request_id": "0ed536c448-funding-recovery",
+      "nonce": "1",
+      "escrow": "0x8edeb20736f4d0c386810fc87dffe0d27de4ce23c0c395506ca77406a07f66de",
+      "amount_mist": "1000",
+      "funding_transaction": "9i47wm9bymqdjBTQMyF4Re6bHEnehDTm7jGRcuTnYD9C",
+      "status": "settled",
+      "terminal_transaction": "591JcbsJaJsBS9RDaLRuZQv4K78sw8ANfE1hazpMbvNn",
+      "escrow_balance_mist": "0",
+      "recipient": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "recipient_credit_mist": "1000"
+    },
+    {
+      "request_id": "0ed536c448-buyer-restart",
+      "nonce": "2",
+      "escrow": "0x6a05f4e1a9d256609b615d08e262f4ddf70c3ec2c89334478aa79c5177ef6ba6",
+      "amount_mist": "1000",
+      "funding_transaction": "Ds6pobRA54RavnmeiHS4JnKj3KHhUCvnW7hssnsmxynj",
+      "status": "settled",
+      "terminal_transaction": "GCiahknA4XK6rU4eRB7isAaVeNCsfg5e5HXGQPoWkhUS",
+      "escrow_balance_mist": "0",
+      "recipient": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "recipient_credit_mist": "1000"
+    },
+    {
+      "request_id": "0ed536c448-provider-restart",
+      "nonce": "3",
+      "escrow": "0x446875c2f9780fc4da79f8868124cfe92181df56fa3e1bcc016e3a75347fc988",
+      "amount_mist": "1000",
+      "funding_transaction": "8TVsKL2obEzHEh6KEAP4syGsz82wCZe2Jb8dUhK9hs2d",
+      "status": "settled",
+      "terminal_transaction": "CrzztwunZTMKkQQ7y26kJU4bdzAJRXm1LshNhPW6mCdb",
+      "escrow_balance_mist": "0",
+      "recipient": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "recipient_credit_mist": "1000"
+    },
+    {
+      "request_id": "0ed536c448-lost-settlement-reply",
+      "nonce": "4",
+      "escrow": "0xedc5e60ce8745eaf083d364a1f93f27d61296a79183774bf4848f3a10eb71203",
+      "amount_mist": "1000",
+      "funding_transaction": "HnaSuG7iH79B9zDNLitEsQoHvJ97XLC5PCa6sJ1vvraY",
+      "status": "settled",
+      "terminal_transaction": "F2oeWjL8RtVEF3kyKLLer8NkczMGkUcJMW1xobM1Ri8x",
+      "escrow_balance_mist": "0",
+      "recipient": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "recipient_credit_mist": "1000"
+    },
+    {
+      "request_id": "0ed536c448-timeout",
+      "nonce": "5",
+      "escrow": "0x948fb38a5fae01ec7b3a230a221d066a8424343f378e902b5037077ff75ec02a",
+      "amount_mist": "1000",
+      "funding_transaction": "Dd12jRmiFhN1hHP2foo7pDHXJfSDXdFzmY3fbg5YUo3R",
+      "status": "refunded",
+      "terminal_transaction": "5pXfTJs5P9ruyjnEbtB9gJ2N5Gwe8xR8m1yDba25sE1r",
+      "escrow_balance_mist": "0",
+      "recipient": "0x55096254869484f9cc14d64c89b2287885fffe6a4a158fbe28370a710a5830c3",
+      "recipient_credit_mist": "1000"
+    },
+    {
+      "request_id": "0ed536c448-rpc-outage",
+      "nonce": "6",
+      "escrow": "0xdacbdfa22a737c91b4aeda8a3809aca768f351307a7ebd8cdac7928c31b7bf7e",
+      "amount_mist": "1000",
+      "funding_transaction": "8eVrWZuWJr335NoVbu5DtujqhFKEzoZ4Vqy7YB583KeZ",
+      "status": "settled",
+      "terminal_transaction": "3jTaVPQ543T7YkoPDptEVSosPPVnchAVD7ZkVbNCE5ZS",
+      "escrow_balance_mist": "0",
+      "recipient": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "recipient_credit_mist": "1000"
+    },
+    {
+      "request_id": "a023519f1f-purchase-0",
+      "nonce": "7",
+      "escrow": "0x93caf45ea48479669bb737665b6771600f14828b2e478a53cdfa30705e0b7ff7",
+      "amount_mist": "1000",
+      "funding_transaction": "8auS3BU5f1jpUzXN2XXhdAv5t8Qq2xSKjHbc1swpiME",
+      "status": "settled",
+      "terminal_transaction": "9UryTdgRc3WdEiGnN5wN75QfaMYfTPT4pGrirSt9WVBP",
+      "escrow_balance_mist": "0",
+      "recipient": "0xad5e5458dfcd97a533f7d6b30872694d85de6999e0fbd7930f312f6835199f1d",
+      "recipient_credit_mist": "1000"
+    }
+  ],
+  "runs": [
+    {
+      "result_file": "demo-results-0ed536c448.json",
+      "results": [
+        {
+          "test": "purchase-0",
+          "digest": "4i1q9YDEML9R6dtaYAAdxnSRxCL5S1xkJyvZfxZA4sYW",
+          "elapsed_ms": 18306,
+          "escrow": "0x6444b606bff13680e4d51b8a6ae4cecc31c41ae2f8ce84e50a4ba22a53266531",
+          "request": "0ed536c448-purchase-0",
+          "status": "settled",
+          "wall_ms": 18318
+        },
+        {
+          "test": "funding-recovery-and-repeat",
+          "digest": "591JcbsJaJsBS9RDaLRuZQv4K78sw8ANfE1hazpMbvNn",
+          "elapsed_ms": 15324,
+          "escrow": "0x8edeb20736f4d0c386810fc87dffe0d27de4ce23c0c395506ca77406a07f66de",
+          "request": "0ed536c448-funding-recovery",
+          "status": "settled"
+        },
+        {
+          "test": "buyer-restart-after-acceptance",
+          "digest": "GCiahknA4XK6rU4eRB7isAaVeNCsfg5e5HXGQPoWkhUS",
+          "elapsed_ms": 6872,
+          "escrow": "0x6a05f4e1a9d256609b615d08e262f4ddf70c3ec2c89334478aa79c5177ef6ba6",
+          "request": "0ed536c448-buyer-restart",
+          "status": "settled"
+        },
+        {
+          "test": "provider-restart-after-persisting-result",
+          "digest": "CrzztwunZTMKkQQ7y26kJU4bdzAJRXm1LshNhPW6mCdb",
+          "elapsed_ms": 8557,
+          "escrow": "0x446875c2f9780fc4da79f8868124cfe92181df56fa3e1bcc016e3a75347fc988",
+          "request": "0ed536c448-provider-restart",
+          "status": "settled"
+        },
+        {
+          "test": "lost-settlement-reply",
+          "digest": "F2oeWjL8RtVEF3kyKLLer8NkczMGkUcJMW1xobM1Ri8x",
+          "elapsed_ms": 16126,
+          "escrow": "0xedc5e60ce8745eaf083d364a1f93f27d61296a79183774bf4848f3a10eb71203",
+          "request": "0ed536c448-lost-settlement-reply",
+          "status": "settled"
+        },
+        {
+          "test": "timeout-refund-and-repeat",
+          "escrow": "0x948fb38a5fae01ec7b3a230a221d066a8424343f378e902b5037077ff75ec02a",
+          "digest": "5pXfTJs5P9ruyjnEbtB9gJ2N5Gwe8xR8m1yDba25sE1r"
+        },
+        {
+          "test": "rpc-outage-keeps-original-agreement",
+          "digest": "3jTaVPQ543T7YkoPDptEVSosPPVnchAVD7ZkVbNCE5ZS",
+          "elapsed_ms": 7462,
+          "escrow": "0xdacbdfa22a737c91b4aeda8a3809aca768f351307a7ebd8cdac7928c31b7bf7e",
+          "request": "0ed536c448-rpc-outage",
+          "status": "settled"
+        }
+      ]
+    },
+    {
+      "result_file": "demo-results-a023519f1f.json",
+      "results": [
+        {
+          "test": "purchase-0",
+          "digest": "9UryTdgRc3WdEiGnN5wN75QfaMYfTPT4pGrirSt9WVBP",
+          "elapsed_ms": 18442,
+          "escrow": "0x93caf45ea48479669bb737665b6771600f14828b2e478a53cdfa30705e0b7ff7",
+          "request": "a023519f1f-purchase-0",
+          "status": "settled",
+          "wall_ms": 18454
+        }
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "operation": "buyer-controller.fund.tx.json",
+      "digest": "Gh6hjJRs1k3bBCVkp1KhXmdsmVb5TZCM9KLxPEQfBtYj",
+      "checkpoint": "382052190",
+      "timestamp_ms": 1789043739832,
+      "net_gas_mist": "1988000"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-buyer-restart.fund.tx.json",
+      "digest": "Ds6pobRA54RavnmeiHS4JnKj3KHhUCvnW7hssnsmxynj",
+      "checkpoint": "382052633",
+      "timestamp_ms": 1789043839067,
+      "net_gas_mist": "7531820"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-funding-recovery.fund.tx.json",
+      "digest": "9i47wm9bymqdjBTQMyF4Re6bHEnehDTm7jGRcuTnYD9C",
+      "checkpoint": "382052507",
+      "timestamp_ms": 1789043811705,
+      "net_gas_mist": "7531820"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-lost-settlement-reply.fund.tx.json",
+      "digest": "HnaSuG7iH79B9zDNLitEsQoHvJ97XLC5PCa6sJ1vvraY",
+      "checkpoint": "382052812",
+      "timestamp_ms": 1789043880353,
+      "net_gas_mist": "7531820"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-provider-restart.fund.tx.json",
+      "digest": "8TVsKL2obEzHEh6KEAP4syGsz82wCZe2Jb8dUhK9hs2d",
+      "checkpoint": "382052720",
+      "timestamp_ms": 1789043858994,
+      "net_gas_mist": "7531820"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-purchase-0.fund.tx.json",
+      "digest": "2qdGfkJog68B7zdtspvt6HzhFK11vjBVrKJ32AT5bY9g",
+      "checkpoint": "382052428",
+      "timestamp_ms": 1789043793922,
+      "net_gas_mist": "7531820"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-rpc-outage.fund.tx.json",
+      "digest": "8eVrWZuWJr335NoVbu5DtujqhFKEzoZ4Vqy7YB583KeZ",
+      "checkpoint": "382053039",
+      "timestamp_ms": 1789043932288,
+      "net_gas_mist": "6553700"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-timeout.fund.tx.json",
+      "digest": "Dd12jRmiFhN1hHP2foo7pDHXJfSDXdFzmY3fbg5YUo3R",
+      "checkpoint": "382052888",
+      "timestamp_ms": 1789043897432,
+      "net_gas_mist": "7531820"
+    },
+    {
+      "operation": "buyer/purchases/0ed536c448-timeout.refund.tx.json",
+      "digest": "5pXfTJs5P9ruyjnEbtB9gJ2N5Gwe8xR8m1yDba25sE1r",
+      "checkpoint": "382052982",
+      "timestamp_ms": 1789043919132,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "buyer/purchases/a023519f1f-purchase-0.fund.tx.json",
+      "digest": "8auS3BU5f1jpUzXN2XXhdAv5t8Qq2xSKjHbc1swpiME",
+      "checkpoint": "382053301",
+      "timestamp_ms": 1789043991261,
+      "net_gas_mist": "7531820"
+    },
+    {
+      "operation": "buyer/registration.tx.json",
+      "digest": "99A79eiVWdbkm3EPK65GTTCtVge7J6aZEwjX7FZPqGGB",
+      "checkpoint": "382052354",
+      "timestamp_ms": 1789043777102,
+      "net_gas_mist": "3403880"
+    },
+    {
+      "operation": "domain.tx.json",
+      "digest": "8bNJBAjMbW8b2j3PNsR3L71MSnmXdfjYgv85M76TqrSE",
+      "checkpoint": "382052221",
+      "timestamp_ms": 1789043746620,
+      "net_gas_mist": "2884800"
+    },
+    {
+      "operation": "provider-controller.fund.tx.json",
+      "digest": "61CmUjJbF1u7UdbfoX5M3FE4Nrg3UMJNhqfhvTJS1oZB",
+      "checkpoint": "382052197",
+      "timestamp_ms": 1789043741403,
+      "net_gas_mist": "1988000"
+    },
+    {
+      "operation": "provider-gas.fund.tx.json",
+      "digest": "7TZR8ksBqX9y6yxh1g6dkgnoxfbzzXMEjoTjVu7odXtG",
+      "checkpoint": "382052208",
+      "timestamp_ms": 1789043743855,
+      "net_gas_mist": "1988000"
+    },
+    {
+      "operation": "provider/receipts/0x446875c2f9780fc4da79f8868124cfe92181df56fa3e1bcc016e3a75347fc988.tx.json",
+      "digest": "CrzztwunZTMKkQQ7y26kJU4bdzAJRXm1LshNhPW6mCdb",
+      "checkpoint": "382052762",
+      "timestamp_ms": 1789043868704,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "provider/receipts/0x6444b606bff13680e4d51b8a6ae4cecc31c41ae2f8ce84e50a4ba22a53266531.tx.json",
+      "digest": "4i1q9YDEML9R6dtaYAAdxnSRxCL5S1xkJyvZfxZA4sYW",
+      "checkpoint": "382052450",
+      "timestamp_ms": 1789043798922,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "provider/receipts/0x6a05f4e1a9d256609b615d08e262f4ddf70c3ec2c89334478aa79c5177ef6ba6.tx.json",
+      "digest": "GCiahknA4XK6rU4eRB7isAaVeNCsfg5e5HXGQPoWkhUS",
+      "checkpoint": "382052666",
+      "timestamp_ms": 1789043846818,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "provider/receipts/0x8edeb20736f4d0c386810fc87dffe0d27de4ce23c0c395506ca77406a07f66de.tx.json",
+      "digest": "591JcbsJaJsBS9RDaLRuZQv4K78sw8ANfE1hazpMbvNn",
+      "checkpoint": "382052574",
+      "timestamp_ms": 1789043826256,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "provider/receipts/0x93caf45ea48479669bb737665b6771600f14828b2e478a53cdfa30705e0b7ff7.tx.json",
+      "digest": "9UryTdgRc3WdEiGnN5wN75QfaMYfTPT4pGrirSt9WVBP",
+      "checkpoint": "382053330",
+      "timestamp_ms": 1789043997601,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "provider/receipts/0xdacbdfa22a737c91b4aeda8a3809aca768f351307a7ebd8cdac7928c31b7bf7e.tx.json",
+      "digest": "3jTaVPQ543T7YkoPDptEVSosPPVnchAVD7ZkVbNCE5ZS",
+      "checkpoint": "382053073",
+      "timestamp_ms": 1789043940246,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "provider/receipts/0xedc5e60ce8745eaf083d364a1f93f27d61296a79183774bf4848f3a10eb71203.tx.json",
+      "digest": "F2oeWjL8RtVEF3kyKLLer8NkczMGkUcJMW1xobM1Ri8x",
+      "checkpoint": "382052835",
+      "timestamp_ms": 1789043885689,
+      "net_gas_mist": "2286300"
+    },
+    {
+      "operation": "provider/registration.tx.json",
+      "digest": "HHni5ogW4bs7qX1tRtPGSG7ozHcTu2cpvKSNi63u3euG",
+      "checkpoint": "382052368",
+      "timestamp_ms": 1789043780265,
+      "net_gas_mist": "3403880"
+    },
+    {
+      "operation": "publish.tx.json",
+      "digest": "B3tAcH5qwwFC18GUC35xFh5fJ6D3Hs7dQw8x73DsvQCY",
+      "checkpoint": "382052215",
+      "timestamp_ms": 1789043745307,
+      "net_gas_mist": "27584800"
+    }
+  ]
+}
