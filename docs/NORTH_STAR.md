@@ -12,6 +12,8 @@ implemented protocol or a validated market.
 
 The evidence behind these principles is in the [protocol survey](research/AGENT_PROTOCOLS.md).
 The proposed problem and decisions to settle next are in [positioning](POSITIONING.md).
+The [proposed PoC scope](POC_SCOPE.md) applies these principles to a paid service
+exchange and separates technical validation from use-case evidence.
 
 ## 1. Make the benefit concrete
 

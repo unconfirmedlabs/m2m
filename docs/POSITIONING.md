@@ -5,6 +5,13 @@ its economic agreements executable on Sui.** The research supports investigating
 this integration. It does not yet establish customer demand or prove that a new
 standalone wire protocol is necessary.
 
+The [proposed PoC scope](POC_SCOPE.md) makes this hypothesis concrete: one
+fixed-price service exchange between known operators, transported over Iroh and
+settled from Sui escrow on a signed buyer acceptance, with a timeout refund path.
+It separates a deterministic technical fixture from the still-open customer
+workflow. Paid inference has not been selected as the first use case. The economic
+rule and other scope choices remain proposed and implementation has not begun.
+
 ## Accepted direction
 
 | Decision | Status | Rationale |
