@@ -49,6 +49,9 @@ profile for known counterparties, using localnet/testnet funds.
 Start with the [positioning and problem definition](docs/POSITIONING.md), then
 read the [north star](docs/NORTH_STAR.md) and the
 [agent protocol research](docs/research/AGENT_PROTOCOLS.md).
+The [comparative review](docs/research/M2M_COMPARATIVE_REVIEW.md) and
+[implemented message inventory](docs/research/M2M_MESSAGE_INVENTORY.md) distinguish
+current capabilities from proposed extensions and upstream compatibility.
 
 The [PoC scope](docs/POC_SCOPE.md) defines the exchange, trust assumptions,
 deliverables, failure cases, and acceptance criteria.
