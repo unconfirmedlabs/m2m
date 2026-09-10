@@ -1,10 +1,11 @@
-# Proposed proof of concept: one paid service exchange
+# Proof of concept scope: one paid service exchange
 
-Status: proposed scope, 2026-09-10. Sui and Iroh are accepted foundations; the
-workflow and implementation choices below are recommendations for the first
-experiment. Inference is not the selected first use case. This document separates
-a technical experiment from the still-unvalidated choice of customer workflow.
+Status: technical fixture implementation authorized, 2026-09-10. Sui and Iroh are
+accepted foundations. The bounded file exchange and acceptance escrow define the
+technical experiment; a real customer workflow remains unvalidated. Inference is
+not the selected first use case.
 The technical fixture needs no GPU, model server, or additional hardware.
+See [the protocol](PROTOCOL.md) and [quickstart](QUICKSTART.md) for the implementation.
 
 ## The question
 
@@ -26,7 +27,7 @@ a product requirement just because it makes a convenient demo.
 
 ## Separate technical scope from use-case selection
 
-The proposed technical scope below can test endpoint authority, signed agreements,
+The technical scope below tests endpoint authority, signed agreements,
 escrow transitions, and failure recovery with a disposable service fixture. It
 cannot demonstrate that a particular market needs m2m.
 
@@ -41,9 +42,8 @@ transaction, and failure or integration cost in their current approach. Compare
 the existing alternative, whether Iroh solves a relevant connectivity problem,
 which Sui-enforced rule matters, and whether both parties can try the exchange.
 If the workflow calls for prepaid access or a bounded allowance rather than
-acceptance escrow, revise that proposed rule before implementation. These are
-product decisions to resolve in the scope discussion, not extra approval steps
-for routine engineering once the implementation scope is authorized.
+acceptance escrow, revise the economic rule for that real adapter. These are
+product decisions; they do not block the authorized technical fixture.
 
 ## Start on the existing server
 
@@ -131,7 +131,7 @@ recovery, not dispute resolution.
 | Component | PoC responsibility |
 |---|---|
 | Small Sui Move package | Agent registration and endpoint replacement; quote verification; escrow funding, uniqueness, settlement, refund, and queryable outcomes |
-| Rust library and CLI | Iroh connections, agent resolution, quote/acceptance signing, chain interaction, purchase commands, status recovery, and diagnostics |
+| Rust library and CLI, TypeScript chain adapter | Iroh connections, agent resolution, quote/acceptance signing, official Sui SDK interaction, purchase commands, status recovery, and diagnostics |
 | Provider handler interface and fixture | One bounded, non-streaming operation; deterministic test artifact and durable result storage; application code separate from protocol code |
 | Durable local job records | Store request IDs, escrow references, output, acceptance decisions/signatures, and transaction attempts before acknowledging relevant actions |
 | Experimental exchange specification | Versioned message schemas, canonical signed bytes, economic states, errors, deadlines, and recovery rules |
@@ -220,7 +220,8 @@ successful exchange and a disconnect/recovery case on testnet.
 
 ## Acceptance criteria and evidence
 
-The following are proposed project targets, not measured results:
+The following are project targets. See [the validation record](VALIDATION.md) for
+measured results and outstanding evidence:
 
 - Complete ten sequential fixture purchases across separate processes on the
   existing server, with distinct keys, correct endpoint binding, and one payout
@@ -260,7 +261,7 @@ the demand result as unvalidated rather than blocking the technical experiment.
    verify payout/refund, uniqueness, tampering, and deadline invariants locally.
 3. **Connect the fixture.** Add Iroh peers, durable recovery, CLI, and the
    deterministic service handler; complete the local exchange and failure runs.
-4. **Run and evaluate.** Once implementation is authorized, run the server-only
+4. **Run and evaluate.** Run the server-only
    exchange on Sui testnet and publish measurements and a repeatable quickstart.
    Follow with the two-network and relay demonstrations. Report each milestone
    separately, including technical feasibility versus demand. Add a real service
@@ -282,7 +283,8 @@ before expanding the protocol.
 ## Sources
 
 Checked 2026-09-10. External sources establish available primitives and related
-implementations; all scope choices, targets, and assessments above are proposals.
+implementations. The technical fixture is authorized; customer hypotheses and
+adoption targets still require evidence.
 
 [^services]: [Parallel agentic payments](https://docs.parallel.ai/integrations/agentic-payments) and [Browserbase payment gateway](https://mpp.browserbase.com/), provider documentation for paid service integrations. Not independently verified usage volumes.
 [^iroh]: Iroh, [Endpoints](https://docs.iroh.computer/concepts/endpoints) and [Relays](https://docs.iroh.computer/concepts/relays), living documentation for identity, address lookup, and fallback connectivity.

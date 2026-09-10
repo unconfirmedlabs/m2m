@@ -5,14 +5,15 @@ over Iroh and coordinate economic activity through Sui under explicit, verifiabl
 terms. The first implementation should earn adoption through one useful workflow
 and a small integration surface.
 
-Sui and Iroh are accepted foundations. The initial audience, economic primitive,
-wire protocol, and compatibility profile remain proposed until the positioning
-review. This document contains engineering guidance; it does not declare an
-implemented protocol or a validated market.
+Sui and Iroh are accepted foundations. The authorized proof of concept implements
+a fixed-file exchange to test transport authentication and economic settlement.
+The initial audience, production protocol, and compatibility profile remain open
+positioning decisions. This document contains engineering guidance; a working
+technical experiment does not establish market demand.
 
 The evidence behind these principles is in the [protocol survey](research/AGENT_PROTOCOLS.md).
 The proposed problem and decisions to settle next are in [positioning](POSITIONING.md).
-The [proposed PoC scope](POC_SCOPE.md) applies these principles to a paid service
+The [PoC scope](POC_SCOPE.md) applies these principles to a paid service
 exchange and separates technical validation from use-case evidence.
 
 ## 1. Make the benefit concrete
@@ -42,8 +43,8 @@ Keep prompts, model selection, memory, planning, and internal tools outside the
 mandatory protocol. Integration should be possible through an SDK or adapter
 without adopting an entire runtime.
 
-Identity-only messaging would not demonstrate the intended proposition. An eventual
-proof of concept should exercise at least one actual Sui economic rule alongside
+Identity-only messaging would not demonstrate the intended proposition. The
+proof of concept must exercise at least one actual Sui economic rule alongside
 Iroh communication, with its trust model stated.
 
 ## 3. Use Ed25519 compatibility precisely

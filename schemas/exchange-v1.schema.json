@@ -1,0 +1,409 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "m2m fixture exchange v1",
+  "description": "Transport shapes; semantic, signature, domain and u64 range checks are also required.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Request"
+    },
+    {
+      "$ref": "#/$defs/Response"
+    }
+  ],
+  "$defs": {
+    "address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$"
+    },
+    "u64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "description": "Unsigned decimal u64; implementations also enforce <=18446744073709551615."
+    },
+    "Quote": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "package_id": {
+          "$ref": "#/$defs/address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/address"
+        },
+        "provider": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer_key": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 32,
+          "maxItems": 32
+        },
+        "provider_key": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 32,
+          "maxItems": 32
+        },
+        "refund": {
+          "$ref": "#/$defs/address"
+        },
+        "payee": {
+          "$ref": "#/$defs/address"
+        },
+        "nonce": {
+          "$ref": "#/$defs/u64"
+        },
+        "request_hash": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 32,
+          "maxItems": 32
+        },
+        "result_hash": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 32,
+          "maxItems": 32
+        },
+        "amount": {
+          "$ref": "#/$defs/u64"
+        },
+        "quote_expires_ms": {
+          "$ref": "#/$defs/u64"
+        },
+        "deadline_ms": {
+          "$ref": "#/$defs/u64"
+        }
+      },
+      "required": [
+        "purpose",
+        "network",
+        "package_id",
+        "deployment",
+        "buyer",
+        "provider",
+        "buyer_key",
+        "provider_key",
+        "refund",
+        "payee",
+        "nonce",
+        "request_hash",
+        "result_hash",
+        "amount",
+        "quote_expires_ms",
+        "deadline_ms"
+      ],
+      "additionalProperties": false
+    },
+    "Acceptance": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "package_id": {
+          "$ref": "#/$defs/address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/address"
+        },
+        "escrow": {
+          "$ref": "#/$defs/address"
+        },
+        "quote_hash": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 32,
+          "maxItems": 32
+        },
+        "result_hash": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 32,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "purpose",
+        "network",
+        "package_id",
+        "deployment",
+        "escrow",
+        "quote_hash",
+        "result_hash"
+      ],
+      "additionalProperties": false
+    },
+    "SignedQuote": {
+      "type": "object",
+      "properties": {
+        "quote": {
+          "$ref": "#/$defs/Quote"
+        },
+        "signature": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 64,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "quote",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "SignedAcceptance": {
+      "type": "object",
+      "properties": {
+        "acceptance": {
+          "$ref": "#/$defs/Acceptance"
+        },
+        "signature": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 64,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "acceptance",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "Request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "const": "quote"
+            },
+            "version": {
+              "const": 1
+            },
+            "buyer": {
+              "$ref": "#/$defs/address"
+            },
+            "nonce": {
+              "$ref": "#/$defs/u64"
+            },
+            "result_hash": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "minItems": 32,
+              "maxItems": 32
+            }
+          },
+          "required": [
+            "method",
+            "version",
+            "buyer",
+            "nonce",
+            "result_hash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "const": "deliver"
+            },
+            "version": {
+              "const": 1
+            },
+            "escrow": {
+              "$ref": "#/$defs/address"
+            }
+          },
+          "required": [
+            "method",
+            "version",
+            "escrow"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "const": "accept"
+            },
+            "version": {
+              "const": 1
+            },
+            "receipt": {
+              "$ref": "#/$defs/SignedAcceptance"
+            }
+          },
+          "required": [
+            "method",
+            "version",
+            "receipt"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Response": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "quote"
+            },
+            "signed": {
+              "$ref": "#/$defs/SignedQuote"
+            }
+          },
+          "required": [
+            "kind",
+            "signed"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "result"
+            },
+            "escrow": {
+              "$ref": "#/$defs/address"
+            },
+            "bytes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "maxItems": 65536
+            }
+          },
+          "required": [
+            "kind",
+            "escrow",
+            "bytes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "settled"
+            },
+            "escrow": {
+              "$ref": "#/$defs/address"
+            },
+            "digest": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "escrow",
+            "digest"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "error"
+            },
+            "code": {
+              "const": "request_failed"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

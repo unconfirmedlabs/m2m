@@ -1,0 +1,1 @@
+m2m proof of concept: authenticated transport, programmable settlement.

@@ -1,0 +1,9 @@
+/target/
+/node_modules/
+/.m2m/
+/move/m2m/build/
+/move/m2m/.move/
+*.log
+.env
+.DS_Store
+__pycache__/

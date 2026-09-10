@@ -1,0 +1,6 @@
+[package]
+name = "m2m"
+edition = "2024"
+
+[addresses]
+m2m = "0x0"

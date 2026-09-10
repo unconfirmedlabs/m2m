@@ -15,7 +15,7 @@ must not require an LLM or a particular agent framework.
 
 - [North star](docs/NORTH_STAR.md): design principles and architectural boundaries.
 - [Positioning](docs/POSITIONING.md): problem hypothesis, alternatives, and open decisions.
-- [Proposed PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
+- [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
 - [Protocol research](docs/research/AGENT_PROTOCOLS.md): dated evidence and adoption lessons.
 
 Read the north star and positioning before substantial protocol changes. Consult
@@ -23,11 +23,11 @@ the relevant research sections when choosing an integration or making a claim
 about another protocol. Verify current upstream specifications before implementing
 against them; a research snapshot is not a version pin.
 
-Current stage: positioning and PoC scoping. The user requested a discussion of the
-findings and problem definition before a proof of concept. Continue documentation
-and analysis, including the requested scope proposal; begin implementation when
-the user moves the project to that stage. Once authorized, proceed within that
-scope without repeatedly asking.
+Current stage: PoC implementation, authorized by the user on 2026-09-10. Implement
+the bounded test-file exchange on the existing server, with Iroh transport and
+Sui escrow. No GPU or inference service is required. Proceed within that scope
+without repeatedly asking. Keep localnet, testnet, and cross-network evidence
+distinct, and do not treat a technical fixture as validated customer demand.
 
 ## Design discipline
 
