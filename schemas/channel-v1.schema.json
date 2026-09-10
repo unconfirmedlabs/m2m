@@ -1,0 +1,1173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/unconfirmedlabs/m2m/blob/main/schemas/channel-v1.schema.json",
+  "title": "m2m sui.channel.v1 envelope",
+  "$comment": "Structural schema. The normative spec also requires exact contextual bindings, signature verification, canonical BCS, checked u64 arithmetic, time and sequence checks. Maximum frame is 1 MiB.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "method": {
+      "const": "sui.channel.v1"
+    },
+    "buyer": {
+      "$ref": "#/$defs/address"
+    },
+    "provider": {
+      "$ref": "#/$defs/address"
+    },
+    "agreement_id": {
+      "$ref": "#/$defs/address"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{0,64}$"
+    },
+    "message": {
+      "$ref": "#/$defs/Message"
+    }
+  },
+  "required": [
+    "version",
+    "method",
+    "buyer",
+    "provider",
+    "agreement_id",
+    "request_id",
+    "message"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$"
+    },
+    "u64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,18}|1[0-7][0-9]{18}|18[0-3][0-9]{17}|184[0-3][0-9]{16}|1844[0-5][0-9]{15}|18446[0-6][0-9]{14}|184467[0-3][0-9]{13}|1844674[0-3][0-9]{12}|184467440[0-6][0-9]{10}|1844674407[0-2][0-9]{9}|18446744073[0-6][0-9]{8}|1844674407370[0-8][0-9]{6}|18446744073709[0-4][0-9]{5}|184467440737095[0-4][0-9]{4}|18446744073709550[0-9]{3}|18446744073709551[0-5][0-9]{2}|1844674407370955160[0-9]{1}|1844674407370955161[0-4]|18446744073709551615)$"
+    },
+    "bytes32": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "minItems": 32,
+      "maxItems": 32
+    },
+    "signature": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "minItems": 64,
+      "maxItems": 64
+    },
+    "Offer": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            47,
+            111,
+            102,
+            102,
+            101,
+            114,
+            47,
+            118,
+            49
+          ]
+        },
+        "method": {
+          "const": [
+            115,
+            117,
+            105,
+            46,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            46,
+            118,
+            49
+          ]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "package_id": {
+          "$ref": "#/$defs/address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/address"
+        },
+        "provider": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer_key": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "provider_key": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "refund": {
+          "$ref": "#/$defs/address"
+        },
+        "payee": {
+          "$ref": "#/$defs/address"
+        },
+        "opening_nonce": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "terms_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "deposit": {
+          "$ref": "#/$defs/u64"
+        },
+        "offer_expires_ms": {
+          "$ref": "#/$defs/u64"
+        },
+        "work_deadline_ms": {
+          "$ref": "#/$defs/u64"
+        },
+        "claim_deadline_ms": {
+          "$ref": "#/$defs/u64"
+        }
+      },
+      "required": [
+        "purpose",
+        "method",
+        "version",
+        "network",
+        "package_id",
+        "deployment",
+        "buyer",
+        "provider",
+        "buyer_key",
+        "provider_key",
+        "refund",
+        "payee",
+        "opening_nonce",
+        "terms_hash",
+        "deposit",
+        "offer_expires_ms",
+        "work_deadline_ms",
+        "claim_deadline_ms"
+      ],
+      "additionalProperties": false
+    },
+    "Credit": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            47,
+            99,
+            114,
+            101,
+            100,
+            105,
+            116,
+            47,
+            118,
+            49
+          ]
+        },
+        "method": {
+          "const": [
+            115,
+            117,
+            105,
+            46,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            46,
+            118,
+            49
+          ]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "package_id": {
+          "$ref": "#/$defs/address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/address"
+        },
+        "provider": {
+          "$ref": "#/$defs/address"
+        },
+        "channel": {
+          "$ref": "#/$defs/address"
+        },
+        "offer_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "sequence": {
+          "$ref": "#/$defs/u64"
+        },
+        "cumulative_amount": {
+          "$ref": "#/$defs/u64"
+        },
+        "request_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "previous_transcript_hash": {
+          "$ref": "#/$defs/bytes32"
+        }
+      },
+      "required": [
+        "purpose",
+        "method",
+        "version",
+        "network",
+        "package_id",
+        "deployment",
+        "buyer",
+        "provider",
+        "channel",
+        "offer_hash",
+        "sequence",
+        "cumulative_amount",
+        "request_hash",
+        "previous_transcript_hash"
+      ],
+      "additionalProperties": false
+    },
+    "Ack": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            47,
+            97,
+            99,
+            107,
+            47,
+            118,
+            49
+          ]
+        },
+        "method": {
+          "const": [
+            115,
+            117,
+            105,
+            46,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            46,
+            118,
+            49
+          ]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "package_id": {
+          "$ref": "#/$defs/address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/address"
+        },
+        "provider": {
+          "$ref": "#/$defs/address"
+        },
+        "channel": {
+          "$ref": "#/$defs/address"
+        },
+        "offer_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "sequence": {
+          "$ref": "#/$defs/u64"
+        },
+        "cumulative_amount": {
+          "$ref": "#/$defs/u64"
+        },
+        "credit_hash": {
+          "$ref": "#/$defs/bytes32"
+        }
+      },
+      "required": [
+        "purpose",
+        "method",
+        "version",
+        "network",
+        "package_id",
+        "deployment",
+        "buyer",
+        "provider",
+        "channel",
+        "offer_hash",
+        "sequence",
+        "cumulative_amount",
+        "credit_hash"
+      ],
+      "additionalProperties": false
+    },
+    "ResultStatement": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            47,
+            114,
+            101,
+            115,
+            117,
+            108,
+            116,
+            47,
+            118,
+            49
+          ]
+        },
+        "method": {
+          "const": [
+            115,
+            117,
+            105,
+            46,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            46,
+            118,
+            49
+          ]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "package_id": {
+          "$ref": "#/$defs/address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/address"
+        },
+        "provider": {
+          "$ref": "#/$defs/address"
+        },
+        "channel": {
+          "$ref": "#/$defs/address"
+        },
+        "offer_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "request_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "credit_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "result_hash": {
+          "$ref": "#/$defs/bytes32"
+        }
+      },
+      "required": [
+        "purpose",
+        "method",
+        "version",
+        "network",
+        "package_id",
+        "deployment",
+        "buyer",
+        "provider",
+        "channel",
+        "offer_hash",
+        "request_hash",
+        "credit_hash",
+        "result_hash"
+      ],
+      "additionalProperties": false
+    },
+    "Close": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            47,
+            99,
+            108,
+            111,
+            115,
+            101,
+            47,
+            118,
+            49
+          ]
+        },
+        "method": {
+          "const": [
+            115,
+            117,
+            105,
+            46,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            46,
+            118,
+            49
+          ]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "package_id": {
+          "$ref": "#/$defs/address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/address"
+        },
+        "provider": {
+          "$ref": "#/$defs/address"
+        },
+        "channel": {
+          "$ref": "#/$defs/address"
+        },
+        "offer_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "final_sequence": {
+          "$ref": "#/$defs/u64"
+        },
+        "final_amount": {
+          "$ref": "#/$defs/u64"
+        },
+        "transcript_hash": {
+          "$ref": "#/$defs/bytes32"
+        }
+      },
+      "required": [
+        "purpose",
+        "method",
+        "version",
+        "network",
+        "package_id",
+        "deployment",
+        "buyer",
+        "provider",
+        "channel",
+        "offer_hash",
+        "final_sequence",
+        "final_amount",
+        "transcript_hash"
+      ],
+      "additionalProperties": false
+    },
+    "FixtureTerms": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            47,
+            102,
+            105,
+            120,
+            116,
+            117,
+            114,
+            101,
+            45,
+            116,
+            101,
+            114,
+            109,
+            115,
+            47,
+            118,
+            49
+          ]
+        },
+        "result_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "unit_price": {
+          "$ref": "#/$defs/u64"
+        },
+        "max_jobs": {
+          "$ref": "#/$defs/u64"
+        },
+        "max_unfulfilled_jobs": {
+          "const": 1
+        }
+      },
+      "required": [
+        "purpose",
+        "result_hash",
+        "unit_price",
+        "max_jobs",
+        "max_unfulfilled_jobs"
+      ],
+      "additionalProperties": false
+    },
+    "RequestDescriptor": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            104,
+            97,
+            110,
+            110,
+            101,
+            108,
+            47,
+            114,
+            101,
+            113,
+            117,
+            101,
+            115,
+            116,
+            47,
+            118,
+            49
+          ]
+        },
+        "channel": {
+          "$ref": "#/$defs/address"
+        },
+        "terms_hash": {
+          "$ref": "#/$defs/bytes32"
+        },
+        "request_id": {
+          "type": "array",
+          "items": {
+            "enum": [
+              45,
+              95,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72,
+              73,
+              74,
+              75,
+              76,
+              77,
+              78,
+              79,
+              80,
+              81,
+              82,
+              83,
+              84,
+              85,
+              86,
+              87,
+              88,
+              89,
+              90,
+              97,
+              98,
+              99,
+              100,
+              101,
+              102,
+              103,
+              104,
+              105,
+              106,
+              107,
+              108,
+              109,
+              110,
+              111,
+              112,
+              113,
+              114,
+              115,
+              116,
+              117,
+              118,
+              119,
+              120,
+              121,
+              122
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "request_sequence": {
+          "$ref": "#/$defs/u64"
+        }
+      },
+      "required": [
+        "purpose",
+        "channel",
+        "terms_hash",
+        "request_id",
+        "request_sequence"
+      ],
+      "additionalProperties": false
+    },
+    "SignedOffer": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Offer"
+        },
+        "signature": {
+          "$ref": "#/$defs/signature"
+        }
+      },
+      "required": [
+        "payload",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "SignedCredit": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Credit"
+        },
+        "signature": {
+          "$ref": "#/$defs/signature"
+        }
+      },
+      "required": [
+        "payload",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "SignedAck": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Ack"
+        },
+        "signature": {
+          "$ref": "#/$defs/signature"
+        }
+      },
+      "required": [
+        "payload",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "SignedResultStatement": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/ResultStatement"
+        },
+        "signature": {
+          "$ref": "#/$defs/signature"
+        }
+      },
+      "required": [
+        "payload",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "SignedClose": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Close"
+        },
+        "signature": {
+          "$ref": "#/$defs/signature"
+        }
+      },
+      "required": [
+        "payload",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "CloseCertificate": {
+      "type": "object",
+      "properties": {
+        "close": {
+          "$ref": "#/$defs/Close"
+        },
+        "buyer_signature": {
+          "$ref": "#/$defs/signature"
+        },
+        "provider_signature": {
+          "$ref": "#/$defs/signature"
+        }
+      },
+      "required": [
+        "close",
+        "buyer_signature",
+        "provider_signature"
+      ],
+      "additionalProperties": false
+    },
+    "Message": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "payment.offer_request"
+            },
+            "opening_nonce": {
+              "$ref": "#/$defs/bytes32"
+            },
+            "result_hash": {
+              "$ref": "#/$defs/bytes32"
+            },
+            "jobs": {
+              "$ref": "#/$defs/u64"
+            },
+            "max_unit_price": {
+              "$ref": "#/$defs/u64"
+            },
+            "deposit": {
+              "$ref": "#/$defs/u64"
+            }
+          },
+          "required": [
+            "type",
+            "opening_nonce",
+            "result_hash",
+            "jobs",
+            "max_unit_price",
+            "deposit"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "payment.offer"
+            },
+            "offer": {
+              "$ref": "#/$defs/SignedOffer"
+            },
+            "terms": {
+              "$ref": "#/$defs/FixtureTerms"
+            }
+          },
+          "required": [
+            "type",
+            "offer",
+            "terms"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "session.resume"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "session.ready"
+            },
+            "phase": {
+              "enum": [
+                "active",
+                "frozen",
+                "closed",
+                "refunded"
+              ]
+            },
+            "highest_credit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SignedCredit"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "completed_jobs": {
+              "$ref": "#/$defs/u64"
+            },
+            "transcript_hash": {
+              "$ref": "#/$defs/bytes32"
+            },
+            "certificate": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/CloseCertificate"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "redeemed_amount": {
+              "$ref": "#/$defs/u64"
+            }
+          },
+          "required": [
+            "type",
+            "phase",
+            "highest_credit",
+            "completed_jobs",
+            "transcript_hash",
+            "certificate",
+            "redeemed_amount"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "payment.authorize"
+            },
+            "request": {
+              "$ref": "#/$defs/RequestDescriptor"
+            },
+            "credit": {
+              "$ref": "#/$defs/SignedCredit"
+            }
+          },
+          "required": [
+            "type",
+            "request",
+            "credit"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "payment.acknowledge"
+            },
+            "ack": {
+              "$ref": "#/$defs/SignedAck"
+            }
+          },
+          "required": [
+            "type",
+            "ack"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "work.get"
+            },
+            "request_hash": {
+              "$ref": "#/$defs/bytes32"
+            }
+          },
+          "required": [
+            "type",
+            "request_hash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "work.result"
+            },
+            "result": {
+              "$ref": "#/$defs/SignedResultStatement"
+            },
+            "bytes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "minItems": 0,
+              "maxItems": 65536
+            }
+          },
+          "required": [
+            "type",
+            "result",
+            "bytes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "payment.close"
+            },
+            "close": {
+              "$ref": "#/$defs/SignedClose"
+            }
+          },
+          "required": [
+            "type",
+            "close"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "payment.close_acknowledge"
+            },
+            "certificate": {
+              "$ref": "#/$defs/CloseCertificate"
+            }
+          },
+          "required": [
+            "type",
+            "certificate"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "payment.settlement"
+            },
+            "digest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "type",
+            "digest"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "error"
+            },
+            "code": {
+              "enum": [
+                "unsupported_version",
+                "unsupported_method",
+                "invalid_message",
+                "unauthorized",
+                "conflict",
+                "budget_exceeded",
+                "expired",
+                "frozen",
+                "terminal",
+                "chain_unavailable",
+                "internal"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          "required": [
+            "type",
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

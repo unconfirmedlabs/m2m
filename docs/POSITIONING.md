@@ -14,6 +14,13 @@ rule now defines the technical experiment authorized on 2026-09-10. Implementati
 and validation are documented in the [quickstart](QUICKSTART.md) and
 [validation record](VALIDATION.md); customer positioning remains unvalidated.
 
+The user subsequently authorized a [signed cumulative-channel PoC](CHANNEL_SPEC.md).
+It targets a measured limitation of the first fixture: every job needs its own
+funding and settlement transactions. One deposit should support ten jobs with
+offchain payment authorizations, followed by one close. This changes the economic
+rule to bounded prepayment and preserves the original escrow as another method.
+Actual ZK proofs and a production customer workflow remain separate decisions.
+
 ## Accepted direction
 
 | Decision | Status | Rationale |
@@ -23,6 +30,8 @@ and validation are documented in the [quickstart](QUICKSTART.md) and
 | Build on their shared Ed25519 support | Accepted motivation, 2026-09-10 | Common signature primitives make a direct cryptographic binding feasible |
 | Separate durable agent identity from its execution environment | Working architectural direction | Preserve the actor's identity across machine and operational-key changes |
 | Review findings and define the problem before a proof of concept | Accepted sequence | Keep implementation focused on the agreed problem |
+| Typed payment messages with optional settlement methods | Accepted PoC direction, 2026-09-10 | Keep economic meaning explicit without requiring every participant to implement every method |
+| Signed cumulative Sui channels over Iroh | Authorized PoC, 2026-09-10 | Test repeated purchases under one deposit, durable recovery, and one-job prepayment exposure |
 
 The shared cryptography does not require a single private key for all roles. Key
 custody, delegation, Agent object ownership, and exact signature formats remain

@@ -91,7 +91,7 @@ export class Chain {
   }
   async execute(tx: Transaction, signer: Ed25519Keypair, journal?: string) {
     tx.setSender(signer.toSuiAddress());
-    tx.setGasBudget(50_000_000);
+    tx.setGasBudgetIfNotSet(50_000_000);
     const bytes = await tx.build({ client: this.client });
     const signed = await signer.signTransaction(bytes);
     const digest = await tx.getDigest({ client: this.client });

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "vectors": "tsx scripts/verify-vectors.ts"
+    "vectors": "tsx scripts/verify-vectors.ts",
+    "channel-vectors": "tsx scripts/verify-channel-vectors.ts",
+    "channel-journals": "tsx scripts/test-channel-recovery.ts"
   },
   "dependencies": {
     "@mysten/sui": "2.30.0",

@@ -16,7 +16,8 @@ must not require an LLM or a particular agent framework.
 - [North star](docs/NORTH_STAR.md): design principles and architectural boundaries.
 - [Positioning](docs/POSITIONING.md): problem hypothesis, alternatives, and open decisions.
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
-- [Payment messages proposal](docs/SETTLEMENT_PROFILES.md): proposed core boundary and optional cumulative channels; not implemented, with ZK proof requirements still open.
+- [Payment messages and settlement methods](docs/SETTLEMENT_PROFILES.md): core payment vocabulary and optional cumulative channels; actual ZK proofs are a separate future method.
+- [Channel specification](docs/CHANNEL_SPEC.md) and [implementation plan](docs/CHANNEL_IMPLEMENTATION_PLAN.md): exact signing, recovery, and acceptance contract for the channel PoC.
 - [Protocol research](docs/research/AGENT_PROTOCOLS.md): dated evidence and adoption lessons.
 
 Read the north star and positioning before substantial protocol changes. Consult
@@ -24,11 +25,14 @@ the relevant research sections when choosing an integration or making a claim
 about another protocol. Verify current upstream specifications before implementing
 against them; a research snapshot is not a version pin.
 
-Current stage: PoC implementation, authorized by the user on 2026-09-10. Implement
-the bounded test-file exchange on the existing server, with Iroh transport and
-Sui escrow. No GPU or inference service is required. Proceed within that scope
-without repeatedly asking. Keep localnet, testnet, and cross-network evidence
-distinct, and do not treat a technical fixture as validated customer demand.
+Current stage: the signed cumulative-channel PoC is implemented alongside the
+existing per-job escrow. See [channel validation](docs/CHANNEL_VALIDATION.md)
+for localnet, public testnet, recovery, and cross-region Fly evidence. Preserve
+one-job prepayment exposure, durable recovery, and the existing escrow ABI/wire
+meanings. No GPU, inference service, or actual ZK prover is part of this scope.
+Keep measured technical behavior separate from customer demand and production
+readiness. Further protocol changes should start from the specification and the
+explicit guarantees of the selected settlement method.
 
 ## Design discipline
 

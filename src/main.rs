@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 use iroh::SecretKey;
 use m2m::{
     chain::{Chain, Config},
+    channel_runtime::{self, BuyOptions, ChannelIdentity, ServeOptions},
     protocol::*,
     service::FixedFile,
     store::{self, Store},
@@ -88,6 +89,80 @@ enum Commands {
     },
     /// Fixed public signing vectors; deterministic keys never fund a wallet.
     Vectors,
+    /// Serve the optional signed cumulative channel method over Iroh.
+    ChannelServe {
+        #[arg(long)]
+        file: PathBuf,
+        #[arg(long)]
+        gas_signer: PathBuf,
+        #[arg(long)]
+        ticket: PathBuf,
+        #[arg(long, default_value_t = 1000)]
+        unit_price: u64,
+        #[arg(long, default_value_t = 1000)]
+        max_jobs: u64,
+        #[arg(long, default_value_t = 300_000)]
+        work_ms: u64,
+        #[arg(long, default_value_t = 60_000)]
+        grace_ms: u64,
+        #[arg(long)]
+        relay: bool,
+        #[arg(long)]
+        relay_only: bool,
+        #[arg(long, value_parser = ["after-credit", "after-result", "after-close-certificate"])]
+        fault: Option<String>,
+    },
+    /// Purchase several fixture jobs under one deposit and cumulative credit.
+    ChannelBuy {
+        #[arg(long)]
+        provider: Address,
+        #[arg(long)]
+        ticket: PathBuf,
+        #[arg(long)]
+        expected_file: PathBuf,
+        #[arg(long)]
+        signer: PathBuf,
+        #[arg(long)]
+        session: String,
+        #[arg(long, default_value_t = 10)]
+        jobs: u64,
+        #[arg(long, default_value_t = 12_000)]
+        deposit: u64,
+        #[arg(long, default_value_t = 1000)]
+        max_unit_price: u64,
+        #[arg(long)]
+        relay: bool,
+        #[arg(long)]
+        relay_only: bool,
+        #[arg(long, value_parser = ["opened", "credit-saved", "acknowledged", "result-saved", "close-signed", "close-certificate"])]
+        stop_after: Option<String>,
+        #[arg(long)]
+        no_close: bool,
+    },
+    ChannelStatus {
+        #[arg(long)]
+        session: String,
+    },
+    ChannelClose {
+        #[arg(long)]
+        session: String,
+        #[arg(long)]
+        gas_signer: PathBuf,
+    },
+    ChannelRedeem {
+        #[arg(long)]
+        channel: Address,
+        #[arg(long)]
+        gas_signer: PathBuf,
+    },
+    ChannelRefund {
+        #[arg(long)]
+        session: String,
+        #[arg(long)]
+        gas_signer: PathBuf,
+    },
+    /// Public deterministic BCS and signature fixtures for the channel method.
+    ChannelVectors,
 }
 #[derive(Clone, Serialize, Deserialize)]
 struct Identity {
@@ -140,6 +215,9 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     if matches!(cli.command, Commands::Vectors) {
         return vectors();
+    }
+    if matches!(cli.command, Commands::ChannelVectors) {
+        return output(m2m::channel_protocol::signing_vectors()?);
     }
     let s = Store::open(cli.state)?;
     if let Commands::Init { chain, signer } = &cli.command {
@@ -198,7 +276,91 @@ async fn main() -> Result<()> {
     let identity: Identity = s.read("identity.json")?;
     let chain = Chain(identity.chain.clone());
     let key = load_key(&s)?;
+    let channel_identity = ChannelIdentity {
+        agent: identity.agent,
+        chain: identity.chain.clone(),
+        key: key.clone(),
+    };
     match cli.command {
+        Commands::ChannelServe {
+            file,
+            gas_signer,
+            ticket,
+            unit_price,
+            max_jobs,
+            work_ms,
+            grace_ms,
+            relay,
+            relay_only,
+            fault,
+        } => {
+            channel_runtime::serve(
+                &s,
+                &channel_identity,
+                ServeOptions {
+                    file,
+                    gas_signer,
+                    ticket,
+                    unit_price,
+                    max_jobs,
+                    work_ms,
+                    grace_ms,
+                    relay,
+                    relay_only,
+                    fault,
+                },
+            )
+            .await?
+        }
+        Commands::ChannelBuy {
+            provider,
+            ticket,
+            expected_file,
+            signer,
+            session,
+            jobs,
+            deposit,
+            max_unit_price,
+            relay,
+            relay_only,
+            stop_after,
+            no_close,
+        } => output(
+            channel_runtime::buy(
+                &s,
+                &channel_identity,
+                BuyOptions {
+                    provider,
+                    ticket,
+                    expected_file,
+                    signer,
+                    session,
+                    jobs,
+                    deposit,
+                    max_unit_price,
+                    relay,
+                    relay_only,
+                    stop_after,
+                    close: !no_close,
+                },
+            )
+            .await?,
+        )?,
+        Commands::ChannelStatus { session } => {
+            output(channel_runtime::status(&s, &channel_identity, &session).await?)?
+        }
+        Commands::ChannelClose {
+            session,
+            gas_signer,
+        } => output(channel_runtime::close(&s, &channel_identity, &session, &gas_signer).await?)?,
+        Commands::ChannelRedeem {
+            channel,
+            gas_signer,
+        } => output(channel_runtime::redeem(&s, &channel_identity, channel, &gas_signer).await?)?,
+        Commands::ChannelRefund {
+            session,
+            gas_signer,
+        } => output(channel_runtime::refund(&s, &channel_identity, &session, &gas_signer).await?)?,
         Commands::Identity => output(identity)?,
         Commands::Serve {
             file,
@@ -491,7 +653,7 @@ async fn main() -> Result<()> {
                 )?;
             }
         }
-        Commands::Init { .. } | Commands::Vectors => unreachable!(),
+        Commands::Init { .. } | Commands::Vectors | Commands::ChannelVectors => unreachable!(),
     }
     Ok(())
 }

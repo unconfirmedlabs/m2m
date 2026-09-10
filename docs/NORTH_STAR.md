@@ -15,6 +15,8 @@ The evidence behind these principles is in the [protocol survey](research/AGENT_
 The proposed problem and decisions to settle next are in [positioning](POSITIONING.md).
 The [PoC scope](POC_SCOPE.md) applies these principles to a paid service
 exchange and separates technical validation from use-case evidence.
+The [channel specification](CHANNEL_SPEC.md) extends that fixture to repeated
+purchases under one deposit, with its prepayment and recovery rules stated explicitly.
 
 ## 1. Make the benefit concrete
 

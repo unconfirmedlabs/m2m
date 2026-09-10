@@ -1,7 +1,11 @@
-# Proposal: payment messages and settlement methods
+# Payment messages and settlement methods
 
-Status: proposed for discussion, 2026-09-10. This document is an integration plan,
-not an implemented wire specification. Sui and Iroh remain required foundations.
+Status: signed cumulative-channel PoC implemented and validated, 2026-09-10.
+This document records the architectural decision and rationale; the channel
+specification defines the exact wire contract. See [CHANNEL_SPEC.md](CHANNEL_SPEC.md)
+and the [validation record](CHANNEL_VALIDATION.md). The
+[implementation plan](CHANNEL_IMPLEMENTATION_PLAN.md) preserves the frozen design.
+Sui and Iroh remain required foundations.
 The existing fixture escrow and its published testnet package implement profile
 0.1 in [PROTOCOL.md](PROTOCOL.md).
 
@@ -202,6 +206,6 @@ existing v1 signed fields and meanings must not change silently. Multi-provider
 routing, multi-party or bidirectional state channels, top-ups, general private
 balances, and model-execution proofs remain separate scope decisions.
 
-Open decisions: confirm this core/method boundary, choose the initial prepayment
-exposure policy, and clarify whether actual ZK is a requirement for the next PoC
-or a later method. No new channel or ZK implementation is claimed by this proposal.
+The implementation scope selects this core/method boundary and one job's price
+of prepayment exposure. It implements signed cumulative credits; actual ZK proofs
+need a separately specified statement and verifier and remain future work.

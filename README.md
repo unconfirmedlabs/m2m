@@ -4,34 +4,44 @@ Economic coordination for autonomous software, using **Iroh for transport** and
 **Sui for economic programmability**.
 
 The proof of concept exchanges a fixed test file between two processes over Iroh.
-A Sui Move contract locks a quoted payment, releases it on a signed buyer
-acceptance, or refunds it after a deadline. It needs no GPU or LLM.
+The optional `sui.channel.v1` method reserves one Sui deposit, carries cumulative
+payment authorizations alongside ten offchain jobs, and settles the total at
+close. It needs no GPU or LLM.
 
 ```mermaid
 sequenceDiagram
     participant B as Buyer
     participant P as Provider
-    participant S as Sui escrow
-    B->>P: Iroh: request quote
-    P->>B: Iroh: signed quote
-    B->>S: Fund verified agreement
-    P->>S: Verify deposit
-    P->>B: Iroh: file bytes
-    B->>P: Iroh: signed acceptance
-    P->>S: Submit acceptance; receive payment
-    Note over B,S: Unsettled deposits are refundable after the deadline
+    participant S as Sui channel
+    B->>P: Iroh: request channel offer
+    P->>B: Iroh: signed terms
+    B->>S: Open and fund channel
+    P->>S: Verify funded agreement
+    loop Ten jobs, no per-job RPC
+        B->>P: Iroh: signed cumulative credit
+        P->>B: Iroh: signed acknowledgement
+        P->>B: Iroh: file and signed result
+    end
+    B->>P: Iroh: signed final close
+    P->>B: Iroh: countersigned close
+    B->>S: Pay cumulative total and refund unused deposit
 ```
 
-**[Run the PoC](docs/QUICKSTART.md)** · [Protocol](docs/PROTOCOL.md) ·
-[Validation and limits](docs/VALIDATION.md)
+**[Run channels](docs/CHANNEL_QUICKSTART.md)** · [Channel specification](docs/CHANNEL_SPEC.md) ·
+[Validation](docs/CHANNEL_VALIDATION.md) · [Implementation plan](docs/CHANNEL_IMPLEMENTATION_PLAN.md) · [Fly Machines PoC](docs/FLY_POC.md)
 
-The fixture and recovery scenarios have passed on local Sui and public testnet,
-including forced Iroh relay transport. Testing across two actual networks remains
-outstanding; see the [testnet evidence](docs/VALIDATION.md#public-testnet).
+Payment is a typed message category; the selected settlement method gives it
+economic meaning. Iroh transports the messages, and Sui enforces the collateral,
+redemption, close, and expiry rules. These are signed channels, without ZK proofs.
+The buyer prepays one job at a time; the provider can claim that advance even if
+delivery fails. See the [architectural decision](docs/SETTLEMENT_PROFILES.md).
 
-The next design discussion is [payment messages and settlement methods](docs/SETTLEMENT_PROFILES.md):
-an optional cumulative channel could support many offchain purchases under one
-Sui deposit. This is a proposal; the current implementation uses per-job escrow.
+The existing per-job escrow remains available with its original wire format and
+acceptance-after-delivery rule: [escrow quickstart](docs/QUICKSTART.md),
+[protocol](docs/PROTOCOL.md), and [validation record](docs/VALIDATION.md).
+The [Fly experiment](docs/FLY_POC.md) runs separate buyer/provider machines in
+Ashburn and Sydney. Cross-region relay transport is verified; direct public-IP
+routing was unavailable under the default Fly network configuration.
 
 The first real customer workflow remains open. This is an experimental protocol
 profile for known counterparties, using localnet/testnet funds.

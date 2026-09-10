@@ -25,6 +25,15 @@ pub async fn endpoint(key: SecretKey, relay: bool) -> Result<Endpoint> {
 }
 
 pub async fn endpoint_with_mode(key: SecretKey, relay: bool, relay_only: bool) -> Result<Endpoint> {
+    endpoint_with_alpns(key, relay, relay_only, vec![ALPN.to_vec()]).await
+}
+
+pub async fn endpoint_with_alpns(
+    key: SecretKey,
+    relay: bool,
+    relay_only: bool,
+    alpns: Vec<Vec<u8>>,
+) -> Result<Endpoint> {
     let mut builder = if relay || relay_only {
         Endpoint::builder(presets::N0)
     } else {
@@ -33,11 +42,7 @@ pub async fn endpoint_with_mode(key: SecretKey, relay: bool, relay_only: bool) -
     if relay_only {
         builder = builder.clear_ip_transports();
     }
-    Ok(builder
-        .secret_key(key)
-        .alpns(vec![ALPN.to_vec()])
-        .bind()
-        .await?)
+    Ok(builder.secret_key(key).alpns(alpns).bind().await?)
 }
 
 pub async fn request(

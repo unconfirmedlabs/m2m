@@ -1,0 +1,168 @@
+{
+  "checked_date": "2026-09-10",
+  "build": "debug",
+  "ten_jobs": {
+    "session": "demo-e206c55459cd",
+    "requested_jobs": 10,
+    "relay_only": false,
+    "peer_auth_attack_rejected": true,
+    "rpc_blocked_during_jobs": true,
+    "rpc_calls_during_jobs": 0,
+    "buyer_rpc_calls_during_jobs": 0,
+    "provider_rpc_calls_during_jobs": 0,
+    "offchain_loop_ms": 11311,
+    "net_economic_gas_mist": "10971116",
+    "job_latency_us": {
+      "samples": [
+        7261265,
+        168515,
+        243421,
+        290357,
+        362894,
+        438500,
+        481184,
+        524714,
+        593026,
+        945057
+      ],
+      "p50": 459842.0,
+      "p95": 7261265,
+      "max": 7261265
+    },
+    "wall_ms": 17266,
+    "outcome": {
+      "channel": "0xc0c98d185839c194162ad332dcb94b0dc86c647e39c54d3c0ca6f458c3eb9784",
+      "digest": "3S9MXUzVHJaS8b1yw1E4rUqsfQBQ7vwQs1E3XNkH1Sqi",
+      "recovered": false,
+      "session": "demo-e206c55459cd",
+      "status": "closed"
+    },
+    "confirmed": {
+      "authorized": 10000,
+      "channel": "0xc0c98d185839c194162ad332dcb94b0dc86c647e39c54d3c0ca6f458c3eb9784",
+      "completed_jobs": 10,
+      "digest": "3S9MXUzVHJaS8b1yw1E4rUqsfQBQ7vwQs1E3XNkH1Sqi",
+      "phase": "closed",
+      "redeemed": "10000",
+      "requested_jobs": 10,
+      "residual": "0",
+      "session": "demo-e206c55459cd",
+      "terminal": true
+    },
+    "repeated": {
+      "authorized": 10000,
+      "channel": "0xc0c98d185839c194162ad332dcb94b0dc86c647e39c54d3c0ca6f458c3eb9784",
+      "completed_jobs": 10,
+      "digest": "3S9MXUzVHJaS8b1yw1E4rUqsfQBQ7vwQs1E3XNkH1Sqi",
+      "phase": "closed",
+      "redeemed": "10000",
+      "requested_jobs": 10,
+      "residual": "0",
+      "session": "demo-e206c55459cd",
+      "terminal": true
+    },
+    "economic_transactions": [
+      {
+        "action": "channel_close",
+        "digest": "3S9MXUzVHJaS8b1yw1E4rUqsfQBQ7vwQs1E3XNkH1Sqi",
+        "state": "confirmed"
+      },
+      {
+        "action": "channel_open",
+        "digest": "DAQbTBL6dHxQEEv4SMiZgrXJ8JsNKzFgYEUKfewaaU3S",
+        "state": "confirmed"
+      }
+    ]
+  },
+  "recovery": {
+    "status": "passed",
+    "network": "localnet",
+    "cases": [
+      {
+        "case": "buyer-boundaries",
+        "coverage": [
+          "C04",
+          "C09",
+          "C10",
+          "C13",
+          "C17",
+          "C18"
+        ],
+        "status": "passed",
+        "elapsed_ms": 65679,
+        "transactions": [
+          {
+            "action": "channel_close",
+            "digest": "Cn58YMNAqxPpPrDdDpTPNH9XA6nTyG5xWSUSv3wADgK5"
+          },
+          {
+            "action": "channel_open",
+            "digest": "V9Qa5SJLctMKedVzBmFQxiiYJCCd1JMG9vzWETS9HQT"
+          }
+        ]
+      },
+      {
+        "case": "provider-faults",
+        "coverage": [
+          "C09",
+          "C10",
+          "C13"
+        ],
+        "status": "passed",
+        "elapsed_ms": 69337,
+        "transactions": [
+          {
+            "action": "channel_close",
+            "digest": "4GbV5BbHywrymyzkMtg4bdZVGr1y2PmepH37Fm33mrR4"
+          },
+          {
+            "action": "channel_open",
+            "digest": "5tAPkiRNeAFTFR5PG4iM5q4cHDqg1WRdQkv1Ebw9gsU4"
+          }
+        ]
+      },
+      {
+        "case": "timer-recovery",
+        "coverage": [
+          "C15",
+          "C16",
+          "C17"
+        ],
+        "status": "passed",
+        "elapsed_ms": 74092,
+        "transactions": [
+          {
+            "action": "channel_redeem",
+            "digest": "3nser3zXES4yNuyWqUmoTX12ZeYaH73dgMRemU2SEFuk"
+          },
+          {
+            "action": "channel_refund",
+            "digest": "E5MdxYNpcEFcuRdyVkcdTHcMpEFvNrsQs8kjL5oZkXCv"
+          },
+          {
+            "action": "channel_open",
+            "digest": "FV15W5mJcbv2aLJSRx2cWpMG4SNLoLRvw2yzigAYvuAu"
+          }
+        ]
+      },
+      {
+        "case": "zero-job-close",
+        "coverage": [
+          "C16"
+        ],
+        "status": "passed",
+        "elapsed_ms": 28551,
+        "transactions": [
+          {
+            "action": "channel_close",
+            "digest": "4mnxiKhNTedF7UhikdSuF8yMnhL7Dbr12wnVPEoTGetF"
+          },
+          {
+            "action": "channel_open",
+            "digest": "Hk1cSP6pahemrFz834EKNv7ueS3pMeaSNHhceQzD1LUJ"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -13,6 +13,7 @@ const { values } = parseArgs({ options: {
   network: { type: 'string', default: 'localnet' },
   rpc: { type: 'string' }, faucet: { type: 'string' },
   build: { type: 'string', default: '.m2m/build.json' },
+  'wallets-from': { type: 'string' },
 } });
 const state = resolve(values.state!);
 if (values.network !== 'localnet' && values.network !== 'testnet') throw new Error('Only localnet/testnet are supported');
@@ -34,10 +35,17 @@ const { response: info } = await client.ledgerService.getServiceInfo({});
 if (info.chain === 'mainnet' || (network === 'testnet' && info.chain !== 'testnet')) throw new Error('Unexpected network; refusing deployment');
 const config: ChainConfig = { rpc_url:rpc, network, chain_id:chainIdentifier, package_id:'0x0', deployment:'0x0' };
 const chain = new Chain(config);
+const walletsFrom = values['wallets-from'] ? resolve(values['wallets-from']) : undefined;
+if (walletsFrom) {
+  const source: ChainConfig = JSON.parse(await readFile(`${walletsFrom}/chain.json`, 'utf8'));
+  if (source.network !== network || source.chain_id !== chainIdentifier) {
+    throw new Error('Source wallets belong to a different network; refusing reuse');
+  }
+}
 for (const name of ['deployer', 'buyer-controller', 'provider-controller', 'provider-gas']) {
   const path = `${state}/${name}.json`;
   if (!await exists(path)) {
-    const generated = Ed25519Keypair.generate();
+    const generated = walletsFrom ? await key(`${walletsFrom}/${name}.json`) : Ed25519Keypair.generate();
     await save(path, { secret_key: generated.getSecretKey(), address: generated.toSuiAddress() });
   }
   const signer = await key(path);
@@ -71,6 +79,8 @@ if (await exists(`${state}/publish.tx.json`)) {
 } else {
   const build = JSON.parse(await readFile(values.build!, 'utf8'));
   const tx = new Transaction();
+  // Publishing both settlement modules needs a larger storage budget than a job.
+  tx.setGasBudget(100_000_000);
   const [cap] = tx.publish({ modules:build.modules, dependencies:build.dependencies });
   tx.transferObjects([cap], signer.toSuiAddress());
   publish = await chain.execute(tx, signer, `${state}/publish.tx.json`);

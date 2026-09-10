@@ -81,6 +81,21 @@ public struct Escrow has key {
     terminal_tx: vector<u8>,
 }
 
+// Channel settlement is a separate module, but it must be able to snapshot
+// the same identity fields that the existing escrow uses. Keep these accessors
+// package-scoped so no new public authority surface is introduced.
+public(package) fun domain_network(domain: &Domain): vector<u8> { domain.network }
+
+public(package) fun domain_package(domain: &Domain): address { domain.package_id }
+
+public(package) fun agent_deployment(agent: &Agent): ID { agent.deployment }
+
+public(package) fun agent_controller(agent: &Agent): address { agent.controller }
+
+public(package) fun agent_endpoint(agent: &Agent): vector<u8> { agent.endpoint_key }
+
+public(package) fun agent_uid_mut(agent: &mut Agent): &mut UID { &mut agent.id }
+
 public fun create_domain(network: vector<u8>, ctx: &mut TxContext) {
     assert!(network.length() > 0 && network.length() <= 64, ELength);
     transfer::freeze_object(Domain {

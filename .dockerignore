@@ -1,0 +1,17 @@
+.git
+.git/**
+.m2m
+.cache
+target
+node_modules
+move/m2m/build
+move/m2m/.move
+docs
+tests
+schemas
+*.tx.json
+*.log
+.env
+.env.*
+__pycache__
+*.pyc
