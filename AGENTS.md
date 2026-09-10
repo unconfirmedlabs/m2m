@@ -16,6 +16,7 @@ must not require an LLM or a particular agent framework.
 - [North star](docs/NORTH_STAR.md): design principles and architectural boundaries.
 - [Positioning](docs/POSITIONING.md): problem hypothesis, alternatives, and open decisions.
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
+- [Payment messages proposal](docs/SETTLEMENT_PROFILES.md): proposed core boundary and optional cumulative channels; not implemented, with ZK proof requirements still open.
 - [Protocol research](docs/research/AGENT_PROTOCOLS.md): dated evidence and adoption lessons.
 
 Read the north star and positioning before substantial protocol changes. Consult

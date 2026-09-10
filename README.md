@@ -29,6 +29,10 @@ The fixture and recovery scenarios have passed on local Sui and public testnet,
 including forced Iroh relay transport. Testing across two actual networks remains
 outstanding; see the [testnet evidence](docs/VALIDATION.md#public-testnet).
 
+The next design discussion is [payment messages and settlement methods](docs/SETTLEMENT_PROFILES.md):
+an optional cumulative channel could support many offchain purchases under one
+Sui deposit. This is a proposal; the current implementation uses per-job escrow.
+
 The first real customer workflow remains open. This is an experimental protocol
 profile for known counterparties, using localnet/testnet funds.
 
