@@ -6,6 +6,7 @@ This is the project direction; the implementation is currently a paid-exchange
 proof of concept. An agent can be an ordinary process, service, or device.
 
 **[Explore every current message](examples/messages/README.md)** ·
+[Foundation assessment and plan](docs/FOUNDATION_PLAN.md) ·
 [Draft core messaging design](docs/CORE_MESSAGE_PROPOSAL.md)
 
 The examples cover all 12 channel messages and all 7 escrow request/response

@@ -6,6 +6,11 @@ requirements. The particular messages and semantics below are a proposal for
 iteration. All currently declared wire types have separate
 [validated examples](../examples/messages/README.md).
 
+The subsequent [foundation assessment](FOUNDATION_PLAN.md) identifies the model,
+identity/authority, admission, delivery, and compatibility decisions needed before
+implementing these sketches. The seven names and illustrative limits below are
+design inputs, not a ready implementation backlog.
+
 ## The problem the core should solve
 
 An independently operated process needs to contact another durable agent, verify

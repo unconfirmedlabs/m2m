@@ -22,6 +22,9 @@ purchases under one deposit, with its prepayment and recovery rules stated expli
 The [current message examples](../examples/messages/README.md) document that
 contract. The [core message proposal](CORE_MESSAGE_PROPOSAL.md) is a separate draft
 for the next iteration, not a change to existing wire or signing formats.
+The [foundation assessment and plan](FOUNDATION_PLAN.md) evaluates the shared
+contracts that need to precede implementing that draft and recommends their
+dependency order.
 
 ## 1. Make the benefit concrete
 
