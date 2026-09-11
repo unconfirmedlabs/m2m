@@ -64,6 +64,11 @@ remote Codex research agent. The [design proposal](docs/RESEARCH_AGENT_PROPOSAL.
 separates service behavior, pricing policies, and settlement, and identifies the
 foundation contracts required before implementation.
 
+[Native streaming payments](docs/STREAMING_PAYMENTS.md) are an accepted part of
+the intended m2m foundation: reusable funded channels for real-time per-unit
+services. The generic primitive remains specification/implementation work beyond
+the current fixed-file channel.
+
 Start with the [positioning and problem definition](docs/POSITIONING.md), then
 read the [north star](docs/NORTH_STAR.md) and the
 [agent protocol research](docs/research/AGENT_PROTOCOLS.md).

@@ -49,6 +49,7 @@ outcomes. This applies the deployment and incentive lessons in RFC 5218.[^1]
 |---|---|---|
 | Application | Produce useful work and interpret its domain-specific quality | May use an LLM, conventional service, or device controller |
 | m2m core | Bind durable peers to authorized endpoints; negotiate features; exchange correlated messages | Native, application-neutral communication without a required payment agreement |
+| Native streaming-payment primitive | Fund channels, authorize incremental consumption, exchange checkpoints, and recover/settle signed state | Built into m2m; services select units and rates; unpaid communication remains valid |
 | m2m profiles | Define work lifecycles, economic agreements, and recoverable outcomes | Optional contracts with explicit guarantees; the current PoC implements payment profiles |
 | Iroh | Authenticated encrypted communication and connection establishment | Endpoint authentication does not grant spending rights |
 | Sui | Durable economic state, ownership, programmable permissions, and settlement | Onchain execution cannot itself establish arbitrary offchain work quality |
@@ -62,6 +63,15 @@ Iroh transport as requirements. The existing economic proof of concept exercises
 actual Sui rules alongside Iroh communication. Use that evidence to design the
 payment profile boundary; a generic message receipt cannot acquire settlement
 meaning implicitly.
+
+Tunneled streaming payments are an accepted built-in primitive for real-time
+per-unit pricing (2026-09-11). The common mechanism belongs to m2m and its SDK;
+inference, data transfer, compute, and other services supply their unit and meter
+policies. See [native streaming payments](STREAMING_PAYMENTS.md). Its generic
+contract remains unfinished; the current fixed-file channel is narrower evidence.
+Recommended protocol placement is a standard m2m extension using core identity,
+signed messaging, negotiation, and delivery primitives. Built-in SDK support and
+standardized semantics do not require channel accounting in the mandatory core.
 
 ## 3. Use Ed25519 compatibility precisely
 

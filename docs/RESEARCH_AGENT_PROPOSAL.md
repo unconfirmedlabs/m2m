@@ -10,11 +10,18 @@ implemented profile, frozen wire contract, or deployment plan. The
 
 Use this workflow to test whether m2m's foundation composes: two named Agents,
 independent communication and economic keys, useful parameterized work, optional
-pricing, and recoverable payments over Iroh. Start with a free research turn.
-For an ongoing research service, recommend metered consumption within a buyer's
-budget, with payment independent of subjective goal satisfaction. A fixed-price
-prepaid turn remains a possible intermediate payment fixture. Neither paid mode
-is implemented; metering evidence and credit-risk rules must precede live billing.
+pricing, and recoverable payments over Iroh. The user clarified the intended
+economic flow: the buyer funds a channel, and responses are paid incrementally
+in real time through signed offchain channel updates. Adapt that tunnel flow to
+m2m; task-completion approval is not its payment trigger. The m2m research binding
+is not implemented. Free work remains a foundation check, not a replacement for
+the intended metered channel workflow.
+
+The user also selected [streaming payments](STREAMING_PAYMENTS.md) as a built-in
+m2m primitive applicable across per-unit services. Research supplies its pricing
+and metering policy and Codex adapter; it uses the shared channel machinery.
+The recommended packaging is a standard m2m extension built on the communication
+core and shipped with the SDK; the core itself does not maintain channel balances.
 
 Keep three choices separate above the core:
 
@@ -22,7 +29,7 @@ Keep three choices separate above the core:
 |---|---|---|
 | Service/work profile | Inputs, conversation continuity, progress, results, cancellation | Research question and cited answer; Codex is the provider's execution adapter |
 | Pricing/metering policy | Billable events or units, rates, limits, and usage evidence | Free; fixed price per turn/task/session; input/output token rates |
-| Settlement method | Who can claim what funds, with which signatures, at what time | Prepaid cumulative channel; acceptance-based escrow; a future metered method |
+| Settlement method | Who can claim what funds, with which signatures, at what time | Funded channel with incremental credits and usage receipts; acceptance-based escrow as another profile |
 
 The m2m core defines identity, admission, feature negotiation, signed messaging,
 correlation, and delivery behavior. It need not understand tokens, model names,
@@ -58,26 +65,24 @@ A follow-up with new input is a new execution; retransmitting an existing reques
 must not cause another execution charge. Provider task status, buyer satisfaction,
 and economic entitlement must remain separate states.
 
-The earlier fixed-price turn recommendation meant buying a bounded invocation,
-not unlimited revisions until the buyer declares success. It can exercise the
-payment machinery, but token metering is a better proposed default for variable
-research consumption. This is a revised recommendation, not an accepted rate card
-or a change to the existing channel's economic rules.
+The earlier recommendation to begin paid research with fixed-price turns is
+superseded by the user's clarification: the target is a funded channel with
+incremental response payments. Fixed-price services remain another policy the
+foundation can support, not a prerequisite for this research workflow.
 
 Token pricing supplies a billing quantity, not independent evidence that a model
 ran or a provider reported usage honestly. Sui can verify signatures on statements;
 the method must separately define why the statement's contents are accepted.
 [Sui signature verification](https://docs.sui.io/develop/cryptography/signing)
 
-Requiring the buyer to sign after every usage report still permits it to withhold
-the last payment. Small prepaid advances avoid that particular veto but expose
-the buyer to nondelivery or unused advance. For payment against a reserved cap
-without a fresh buyer signature, specify a new method accepting a designated
-meter's signed evidence or a supported proof. It must bind rates, request, meter
-authority, cumulative usage, and cap; define replay/expiry/refund behavior; and
-state the trust placed in the meter. Letting the provider act as meter trusts its
-accounting and could expose the whole cap to a dishonest claim. A usage budget
-also does not prevent low-value work from consuming that budget.
+The intended flow does not defer all payment until the buyer accepts the final
+answer. Each delivered increment is covered by an acknowledged signed credit;
+the buyer replenishes authorization as the exchange proceeds. If it stops
+replenishing, the provider stops at the authorized boundary and retains its
+existing redemption rights. A final usage receipt and provider close consent can
+settle within the prior buyer authorization without asking the buyer to approve
+the research outcome. Neither the initial deposit nor a provider receipt alone
+authorizes unrestricted withdrawal.
 
 The core should carry these agreements and evidence without selecting a universal
 judge of task completion. Outcome-contingent payments remain an optional profile
@@ -143,11 +148,25 @@ become another charge in this service.
 | Pay after metered work | Agreed rates and a work budget, which alone is not a redeemable credit | Provider reports usage; buyer checks it and signs an exact cumulative credit | Provider risks buyer withholding; buyer relies on agreed usage evidence |
 | Prepaid metered tranches | Small exact redeemable advances | Usage and remaining-credit reports; buyer may authorize the next advance | Buyer risks unused advance; precise refunds need an explicit rule |
 
-**Possible first payment fixture:** one fixed-price prepaid research turn at a time,
-with a bounded duration/input/output scope and a small session deposit. A session
-can contain several turns. Reuse the signed-channel economic rule, not the
-fixed-file service schema. The channel is funded once; routine authorizations
-travel over Iroh, and Sui enforces redemption/close/refund rules.
+**Target paid flow:** fund once, exchange responses with incremental signed
+payment state, then settle the accumulated state on Sui. One research response
+may contain several streaming/payment windows; transport chunks, payment updates,
+and user-visible turns need not have a one-to-one relationship.
+
+1. Agree rates, limits, signer authority, and channel deadlines; fund the channel.
+2. Bind the request and quoted input usage to a buyer-signed cumulative credit
+   covering input plus a bounded output allowance.
+3. Persist and acknowledge the credit before dispatch; return signed output and
+   usage checkpoints only within acknowledged authorization.
+4. Replenish credit against the current checkpoint as output progresses. Stop
+   at the authorization boundary if credit is not renewed. New follow-ups bind
+   new request IDs; reconnect/retry recovers existing state.
+5. Close using the buyer's existing credit and provider-signed exact usage and
+   close consent. Preserve unilateral redemption and expiry recovery paths.
+
+This makes payment progress in real time offchain; a Sui transaction is not
+required for each response. The remaining implementation work is the m2m binding
+and Codex usage/stream adapter, with explicit tests of this economic contract.
 
 The buyer can bundle its economic authorization with the request, or send a
 separate correlated payment message. Either representation must bind the same
@@ -156,12 +175,12 @@ Packet adjacency is not an authorization rule. The provider must durably match
 the request and authorization before dispatch. A duplicate returns the saved
 state/result and does not cause another credit increment or research run.
 
-The response can carry signed usage, a result commitment, or an invoice. The
-provider cannot debit the buyer just by signing that response. If postpaid usage
-is chosen, the buyer's separate economic signature authorizes the exact amount;
-an invoice alone is not spend authority.
+Responses carry signed content and usage bound to the credit/checkpoint history.
+The provider's claim is backed by existing buyer authorization. Do not insert a
+new final-answer acceptance signature into this flow; genuinely postpaid invoices
+are a different optional economic rule.
 
-### Existing channel limitation
+### Compatibility with m2m's fixed-file channel
 
 In `sui.channel.v1`, a valid buyer credit is **immediately redeemable**, even if
 the provider has not delivered or started the work. It is not a refundable
@@ -171,7 +190,7 @@ monotonicity, collateral, and deadlines; its `terms_hash` is opaque and does not
 execute a pricing formula. [Current channel specification](CHANNEL_SPEC.md),
 [redemption implementation](../move/m2m/sources/channel.move)
 
-For a prepaid turn, automatic return of the unused deposit is
+For the existing fixed-file prepaid turn, return of the unused deposit is
 different from refunding an already authorized turn. Failure or cancellation
 does not automatically undo the latter. A cooperative refund requires explicit
 method support and accounting for amounts already redeemed; it is not a buyer
@@ -179,19 +198,19 @@ guarantee of the current method. Permit only one unfulfilled paid turn in the
 honest buyer's runtime. Move bounds the whole deposit; it does not enforce that
 one-turn dispatch policy against a compromised economic signer.
 
-To enforce “reserve up to X, pay exactly verified usage” without another buyer
-signature, a different settlement contract must distinguish the cap from the
-claim and define admissible usage evidence, disputes/refunds, and expiry. A
-provider-signed token count by itself is not independent proof of usage.
-
-The existing “zk tunnel” PoC is a signed cumulative channel. It contains no ZK
-proof of inference, token counts, or billing. A future proof-based method must
-identify the statement, witness, circuit/verifier, and trust assumptions.
+These are limits of m2m's current fixture, not reasons to redesign the target
+tunnel flow as postpaid billing or introduce an outcome evaluator. The metered
+binding must validate the price equation and distinguish authorized counters from
+delivered counters. Its exact close verifies the prior buyer credit and the
+provider's usage receipt/close consent. Already redeemed funds cannot be clawed
+back by reporting lower usage at close; rolling authorization bounds that advance
+exposure. Preserve original fixture formats and funded agreement rights while
+specifying this binding. Signed metering still does not prove research quality.
 
 ## Immutable policies and mutable agreements
 
 **Make accepted terms immutable; make a separately published Sui policy optional.**
-For this named paid-service demonstration, a reusable frozen fixed-price policy
+For this named paid-service demonstration, a reusable frozen metered policy
 would be a useful additional example once the basic profile works.
 
 Sui immutable objects cannot be changed, transferred, or deleted after freezing,
@@ -317,13 +336,14 @@ This use case is a design test for the foundation, not a reason to skip F0–F3.
    the same conversation. Persist and recover the work mapping.
 4. **Paid binding (F4):** specify and implement a versioned channel binding for
    separate economic keys and arbitrary request/result commitments. Demonstrate
-   several fixed-price turns under one deposit, duplicate recovery, close, and
-   unilateral failure paths. Publish one frozen policy version if validating its
-   onchain reference is included; existing funded channels retain their rights.
+   metered responses under one deposit, incremental credit replenishment, bounded
+   streaming, duplicate recovery, exact close using existing buyer authorization,
+   and unilateral failure paths. Publish one frozen policy version if validating
+   its onchain reference is included; existing funded channels retain their rights.
 5. **Policy composability:** publish a new price for new agreements; demonstrate
-   an old agreement still uses its accepted price. Specify and vector-test an
-   input/output metered policy on the same service. Live metered settlement is a
-   later increment after choosing postpaid buyer acceptance or prepaid tranches.
+   an old agreement still uses its accepted price. Vector-test input/output rates,
+   rounding, and authorization limits. Use the same service interface with a free
+   or fixed-price policy to show that the core does not prescribe token billing.
 
 The current handler takes no arguments and expects a known result hash, while
 channel admission/opening uses endpoint keys as economic keys. A Codex research
@@ -348,11 +368,11 @@ agents operated by us still do not establish independent customer demand.
 
 ## Decisions this proposal leaves open
 
-The recommended starting choices are a known remote provider, free work followed
-by payment for bounded consumption, one active turn per conversation, and policy
-immutability per accepted agreement. A fixed prepaid turn is a possible payment
-fixture; metered usage is the recommended ongoing research model. Before
-implementation, freeze the service profile, exact
+The user-selected economic direction is a funded channel with incremental
+response payments, independent of subjective task completion. Recommended initial
+limits are a known remote provider, one active turn per conversation, and policy
+immutability per accepted agreement. Before implementation, freeze the service
+profile, exact
 signature/envelope format, operational limits and deposit, Codex adapter pin,
 name/network setup, and compatibility binding. Exact prices, a token-meter trust
 model, automatic refund enforcement, and a proof system are not accepted decisions.

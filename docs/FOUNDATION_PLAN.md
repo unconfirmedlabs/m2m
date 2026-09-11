@@ -16,6 +16,13 @@ The [named research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) provides a concr
 next use case to test these boundaries. Its service, pricing, and payment choices
 remain proposed and follow the F0–F4 dependency order below.
 
+On 2026-09-11, the user selected [native streaming payments](STREAMING_PAYMENTS.md)
+as a built-in m2m primitive across per-unit services. Specify it as part of the
+foundation now; its implementation still depends on the identity, messaging, and
+recovery contracts below. Unpaid communication remains valid.
+The recommended placement is a standard extension on the communication core,
+with built-in SDK support and separate economic conformance requirements.
+
 ## Assessment
 
 The concern is supported by the code: m2m has working payment applications and
@@ -98,7 +105,7 @@ flowchart BT
     S[Sui: durable identity and authority] --> C
     C --> A[Applications and service handlers]
     C --> W[Optional native work profile]
-    C --> P[Optional native payment profiles]
+    C --> P[Native streaming payments and other payment methods]
     S --> P
     W --> A
     P --> A

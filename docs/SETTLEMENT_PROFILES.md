@@ -18,6 +18,13 @@ for every conversation; this decision record is not a generic core wire spec.
 
 ## Recommendation
 
+Update, 2026-09-11: the user selected tunneled streaming payments as a built-in
+primitive for real-time per-unit services. The [native streaming-payment
+decision](STREAMING_PAYMENTS.md) generalizes the common authorization/checkpoint/
+settlement machinery. Pricing units and meter policies remain service-selectable;
+using payments is optional. The fixed-file method specified below remains its
+original compatibility contract, not the full generic streaming implementation.
+
 Make payment communication part of m2m's core vocabulary. Implement payment
 channels as a first-party, optional settlement method with its own signed payloads,
 Move module, state machine, and recovery rules. An agent supporting only the
@@ -34,7 +41,8 @@ payment sequence numbers. One connection can carry messages for several agreemen
 |---|---|
 | m2m core | Agent identity and endpoint authority; agreement/request correlation; payment message category; method/version selection; signing domains and rejection rules |
 | Settlement method | Meaning of authorization, collateral requirements, signed evidence, redemption, close/refund rules, deadlines, and authoritative outcome queries |
-| Application | Work description, price negotiation, units/metering, result acceptance, and acceptable prepayment exposure |
+| Native streaming primitive | Common incremental authorization, checkpoints, credit renewal, metered close, and recovery; generic specification still unfinished |
+| Application/policy | Work description, chosen prices and unit/meter definitions, result interpretation, and acceptable prepayment exposure |
 | Optional proof implementation | Prove a precisely defined statement and verify it under the selected method's pinned rules |
 | Iroh / Sui | Carry authenticated encrypted messages / enforce funded economic transitions |
 

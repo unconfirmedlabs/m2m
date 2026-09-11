@@ -14,6 +14,10 @@ decision, 2026-09-11. Apply this to the foundation and new bindings; migrate the
 existing PoCs through an explicit compatibility specification rather than
 silently changing their signed statements or agreement authority.
 
+Tunneled streaming payments are a built-in m2m primitive for real-time per-unit
+pricing: accepted user decision, 2026-09-11. Generalize the funded-channel flow
+across services; keep unit/rate policies configurable and unpaid messaging valid.
+
 The durable agent identity, its controller, authorized endpoint keys, and spending
 authority are distinct concepts. An agent can be ordinary software; participation
 must not require an LLM or a particular agent framework.
@@ -25,6 +29,7 @@ must not require an LLM or a particular agent framework.
 - [Foundation assessment and plan](docs/FOUNDATION_PLAN.md): current architectural gaps and recommended dependency order; proposed work, not a frozen core contract.
 - [Identity and naming recommendation](docs/IDENTITY_AND_NAMING.md): Agent/key separation, rotation, and an optional SuiNS-to-Agent binding; proposed design with checked upstream evidence.
 - [Named research-agent proposal](docs/RESEARCH_AGENT_PROPOSAL.md): proposed coordinator/Codex use case; service, pricing, and settlement boundaries; prerequisite foundation work and explicit prepayment limits.
+- [Native streaming payments](docs/STREAMING_PAYMENTS.md): accepted built-in primitive direction; common channel machinery, service-defined units, and unfinished compatibility/specification work.
 - [Message examples](examples/messages/README.md): every current wire message, with checked signatures and explicit implementation status.
 - [Core message proposal](docs/CORE_MESSAGE_PROPOSAL.md): draft native messaging foundation; not implemented or a released wire contract.
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
@@ -44,6 +49,9 @@ one-job prepayment exposure, durable recovery, and the existing escrow ABI/wire
 meanings. No GPU, inference service, or actual ZK prover is part of the implemented
 fixture scope. The named Codex research-agent use case is a subsequent proposal,
 not an implemented profile or a reason to skip the foundation contracts.
+For that use case, the user selected a funded channel with incremental response
+payments through signed offchain updates. Adapt the tunnel flow; do not make
+subjective task completion or final-answer acceptance a payment prerequisite.
 Keep measured technical behavior separate from customer demand and production
 readiness. Further protocol changes should start from the specification and the
 explicit guarantees of the selected settlement method.

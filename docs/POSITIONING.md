@@ -32,11 +32,11 @@ On 2026-09-11, the user proposed a local coordinator and a remote Codex research
 agent, named `local.nozomi.sui` and `research.nozomi.sui`, as a next use case.
 The [research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) evaluates that workflow
 against the foundation plan. It separates the research service, pricing policy,
-and settlement method. After the user's concern about subjective task completion,
-the recommended ongoing research model is budgeted, metered consumption with
-payment independent of buyer satisfaction. Fixed-price prepaid turns remain a
-possible intermediate fixture; neither mode is an implemented research service
-or an accepted token-pricing rule.
+and settlement method. The user clarified the economic direction: fund a channel
+and pay for responses incrementally in real time through signed offchain updates,
+independent of buyer satisfaction. Adapt that tunnel flow to m2m; a fixed-price
+research fixture or postpaid acceptance scheme is not a prerequisite. Exact rates,
+the Codex usage binding, and the m2m research implementation remain unfinished.
 
 ## Accepted direction
 
@@ -51,10 +51,15 @@ or an accepted token-pricing rule.
 | Review findings and define the problem before a proof of concept | Accepted sequence | Keep implementation focused on the agreed problem |
 | Typed payment messages with optional settlement methods | Accepted PoC direction, 2026-09-10 | Keep economic meaning explicit without requiring every participant to implement every method |
 | Signed cumulative Sui channels over Iroh | Authorized PoC, 2026-09-10 | Test repeated purchases under one deposit, durable recovery, and one-job prepayment exposure |
+| Tunneled streaming payments as a built-in m2m primitive | Accepted, 2026-09-11 | Reuse funded channels and incremental payment updates across real-time per-unit services; unit/rate policies vary and unpaid messaging remains possible |
 
 The shared cryptography does not require a single private key for all roles. Key
 custody, delegation, Agent object ownership, and exact signature formats remain
 design decisions. See the [north star](NORTH_STAR.md).
+
+The [native streaming-payment decision](STREAMING_PAYMENTS.md) defines the intended
+shared machinery and its boundary with service policies. This is accepted scope,
+not a claim that the generic primitive is already implemented.
 
 ## Proposed problem statement
 
