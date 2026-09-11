@@ -32,8 +32,11 @@ On 2026-09-11, the user proposed a local coordinator and a remote Codex research
 agent, named `local.nozomi.sui` and `research.nozomi.sui`, as a next use case.
 The [research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) evaluates that workflow
 against the foundation plan. It separates the research service, pricing policy,
-and settlement method; free then fixed-price prepaid turns are recommendations,
-not an implemented service or an accepted token-pricing rule.
+and settlement method. After the user's concern about subjective task completion,
+the recommended ongoing research model is budgeted, metered consumption with
+payment independent of buyer satisfaction. Fixed-price prepaid turns remain a
+possible intermediate fixture; neither mode is an implemented research service
+or an accepted token-pricing rule.
 
 ## Accepted direction
 

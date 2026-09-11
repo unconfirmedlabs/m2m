@@ -10,9 +10,11 @@ implemented profile, frozen wire contract, or deployment plan. The
 
 Use this workflow to test whether m2m's foundation composes: two named Agents,
 independent communication and economic keys, useful parameterized work, optional
-pricing, and recoverable payments over Iroh. Start with a free research turn, then
-a fixed-price prepaid turn under a funded channel. Demonstrate metered pricing
-only after specifying its usage and credit-risk rules.
+pricing, and recoverable payments over Iroh. Start with a free research turn.
+For an ongoing research service, recommend metered consumption within a buyer's
+budget, with payment independent of subjective goal satisfaction. A fixed-price
+prepaid turn remains a possible intermediate payment fixture. Neither paid mode
+is implemented; metering evidence and credit-risk rules must precede live billing.
 
 Keep three choices separate above the core:
 
@@ -32,6 +34,54 @@ negotiation before work or payment authorization.
 The research service should be usable with several policies, and a reusable
 payment method should support several services. A connection, a research
 conversation, a work item, and a funded agreement are different lifecycles.
+
+## Payment entitlement is separate from goal satisfaction
+
+The user's follow-up on 2026-09-11 identifies a central failure case: a buyer can
+keep saying that the research goal has not been achieved. A protocol cannot
+resolve that subjective disagreement merely by recording signatures or an
+immutable description of the goal.
+
+An economic agreement needs an explicit payment trigger and admissible evidence:
+
+| Payment basis | What establishes entitlement | Boundary |
+|---|---|---|
+| Authorized consumption or bounded attempt | Exact prepaid authorization, or a metered claim accepted by the selected method | No guarantee of a satisfactory answer; metering still needs a trust model |
+| Objectively specified outcome | Evidence satisfying an agreed predicate, such as a precommitted artifact hash or verifiable execution of a fixed test | Proves that predicate, not arbitrary research quality |
+| Evaluated outcome | Decision by the buyer or another explicitly authorized evaluator | Buyer-only acceptance permits withholding; an independent evaluator adds trust, cost, and dispute rules |
+
+For ongoing research, recommend the first model: agreed input/output usage rates,
+explicit treatment of tools and other charges, and a maximum authorized spend.
+The buyer can stop buying more work, request a paid follow-up, or change provider.
+Its dissatisfaction does not retroactively cancel an established payment right.
+A follow-up with new input is a new execution; retransmitting an existing request
+must not cause another execution charge. Provider task status, buyer satisfaction,
+and economic entitlement must remain separate states.
+
+The earlier fixed-price turn recommendation meant buying a bounded invocation,
+not unlimited revisions until the buyer declares success. It can exercise the
+payment machinery, but token metering is a better proposed default for variable
+research consumption. This is a revised recommendation, not an accepted rate card
+or a change to the existing channel's economic rules.
+
+Token pricing supplies a billing quantity, not independent evidence that a model
+ran or a provider reported usage honestly. Sui can verify signatures on statements;
+the method must separately define why the statement's contents are accepted.
+[Sui signature verification](https://docs.sui.io/develop/cryptography/signing)
+
+Requiring the buyer to sign after every usage report still permits it to withhold
+the last payment. Small prepaid advances avoid that particular veto but expose
+the buyer to nondelivery or unused advance. For payment against a reserved cap
+without a fresh buyer signature, specify a new method accepting a designated
+meter's signed evidence or a supported proof. It must bind rates, request, meter
+authority, cumulative usage, and cap; define replay/expiry/refund behavior; and
+state the trust placed in the meter. Letting the provider act as meter trusts its
+accounting and could expose the whole cap to a dishonest claim. A usage budget
+also does not prevent low-value work from consuming that budget.
+
+The core should carry these agreements and evidence without selecting a universal
+judge of task completion. Outcome-contingent payments remain an optional profile
+with an explicit verifier/evaluator, failure deadline, and dispute allocation.
 
 ## Names and authority
 
@@ -93,7 +143,7 @@ become another charge in this service.
 | Pay after metered work | Agreed rates and a work budget, which alone is not a redeemable credit | Provider reports usage; buyer checks it and signs an exact cumulative credit | Provider risks buyer withholding; buyer relies on agreed usage evidence |
 | Prepaid metered tranches | Small exact redeemable advances | Usage and remaining-credit reports; buyer may authorize the next advance | Buyer risks unused advance; precise refunds need an explicit rule |
 
-**Recommended first paid mode:** one fixed-price prepaid research turn at a time,
+**Possible first payment fixture:** one fixed-price prepaid research turn at a time,
 with a bounded duration/input/output scope and a small session deposit. A session
 can contain several turns. Reuse the signed-channel economic rule, not the
 fixed-file service schema. The channel is funded once; routine authorizations
@@ -121,7 +171,7 @@ monotonicity, collateral, and deadlines; its `terms_hash` is opaque and does not
 execute a pricing formula. [Current channel specification](CHANNEL_SPEC.md),
 [redemption implementation](../move/m2m/sources/channel.move)
 
-For the recommended prepaid turn, automatic return of the unused deposit is
+For a prepaid turn, automatic return of the unused deposit is
 different from refunding an already authorized turn. Failure or cancellation
 does not automatically undo the latter. A cooperative refund requires explicit
 method support and accounting for amounts already redeemed; it is not a buyer
@@ -298,9 +348,11 @@ agents operated by us still do not establish independent customer demand.
 
 ## Decisions this proposal leaves open
 
-The recommended starting choices are a known remote provider, free then fixed
-prepaid turns, one active turn per conversation, and policy immutability per
-accepted agreement. Before implementation, freeze the service profile, exact
+The recommended starting choices are a known remote provider, free work followed
+by payment for bounded consumption, one active turn per conversation, and policy
+immutability per accepted agreement. A fixed prepaid turn is a possible payment
+fixture; metered usage is the recommended ongoing research model. Before
+implementation, freeze the service profile, exact
 signature/envelope format, operational limits and deposit, Codex adapter pin,
 name/network setup, and compatibility binding. Exact prices, a token-meter trust
 model, automatic refund enforcement, and a proof system are not accepted decisions.
