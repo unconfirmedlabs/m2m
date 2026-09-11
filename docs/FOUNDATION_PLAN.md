@@ -8,7 +8,9 @@ Sui, Iroh, and the native foundational-standard direction remain requirements.
 The later [identity and naming recommendation](IDENTITY_AND_NAMING.md) explores
 separate communication/economic keys and SuiNS aliases resolving to Agent objects.
 It supplies design inputs and upstream evidence for the identity work below;
-its proposed policy is not yet a frozen core or payment binding.
+economic/transport key separation was subsequently accepted on 2026-09-11, while
+the detailed lifecycle and naming policies remain proposed. There is not yet a
+frozen core or payment binding for these changes.
 
 ## Assessment
 

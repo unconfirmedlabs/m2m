@@ -36,6 +36,7 @@ Actual ZK proofs and a production customer workflow remain separate decisions.
 | Use Iroh for transport | Accepted, 2026-09-10 | Connect software across changing networks using authenticated endpoints |
 | Use Sui for economic programmability | Accepted, 2026-09-10 | Express economic authority, ownership, conditions, and settlement in programmable state |
 | Build on their shared Ed25519 support | Accepted motivation, 2026-09-10 | Common signature primitives make a direct cryptographic binding feasible |
+| Separate economic signing keys from Iroh transport keys | Accepted, 2026-09-11 | Independent key lifecycles and bounded operational authority; existing PoC bindings require explicit compatibility work |
 | Separate durable agent identity from its execution environment | Working architectural direction | Preserve the actor's identity across machine and operational-key changes |
 | Review findings and define the problem before a proof of concept | Accepted sequence | Keep implementation focused on the agreed problem |
 | Typed payment messages with optional settlement methods | Accepted PoC direction, 2026-09-10 | Keep economic meaning explicit without requiring every participant to implement every method |

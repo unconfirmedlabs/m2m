@@ -9,6 +9,11 @@ required transport; Sui is the required layer for economic programmability.**
 Their common Ed25519 support is an integration advantage. Preserve these choices
 unless the user changes them.
 
+Economic signing keys and Iroh transport keys must be distinct: accepted user
+decision, 2026-09-11. Apply this to the foundation and new bindings; migrate the
+existing PoCs through an explicit compatibility specification rather than
+silently changing their signed statements or agreement authority.
+
 The durable agent identity, its controller, authorized endpoint keys, and spending
 authority are distinct concepts. An agent can be ordinary software; participation
 must not require an LLM or a particular agent framework.

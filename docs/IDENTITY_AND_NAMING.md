@@ -1,8 +1,9 @@
 # Agent identity, endpoint rotation, and SuiNS
 
-Status: recommended design for discussion, 2026-09-11. This develops the identity
-work in the [foundation plan](FOUNDATION_PLAN.md); it is not implemented or an
-accepted replacement for the existing channel contract. m2m baseline:
+Status: economic/transport key separation was accepted by the user on 2026-09-11.
+The naming binding and detailed lifecycle policies remain recommendations.
+This develops the identity work in the [foundation plan](FOUNDATION_PLAN.md);
+it is not implemented or a replacement for the existing channel contract. m2m baseline:
 `a8b2cda6eccdd034cd539b79fa80c737981e4d3c`.
 
 ## Recommendation
@@ -52,7 +53,7 @@ does not implement the lifecycle described here.
 
 ## Ideal rotation model
 
-The reference design should separate transport key T1 from economic signer P1.
+The reference design must separate transport key T1 from economic signer P1.
 Both may use Ed25519; their role separation should be explicit and their private
 keys should be independently replaceable. Compromise of a transport-only key
 must not, by itself, authorize a payment signature. Compromise of a whole process
@@ -254,8 +255,9 @@ separately. Do not equate a cached registration ID with current brand endorsemen
 ## Work to add to the foundation plan
 
 Before implementation, settle the qualified Agent reference, controller/recovery
-model, communication authorization generation and freshness, separation of
-economic signers, and the current-channel compatibility boundary. Then specify
+model, communication authorization generation and freshness, the grant contract
+for the accepted separate economic signers, and the current-channel compatibility
+boundary. Then specify
 the optional SuiNS binding: normalization, network context, target type, lifecycle,
 adopted-name validation, retargeting errors, and payment-destination semantics.
 

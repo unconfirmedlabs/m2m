@@ -82,11 +82,17 @@ not derived this way.[^4] A shared algorithm does not automatically equate these
 identities or grant an endpoint control of an object.
 
 Design an explicit authorization relationship between the durable agent and its
-operational keys. The default design recommendation is separate controller/funding
-keys and revocable endpoint keys. An endpoint key may receive narrow economic
-authority without holding the controller's unrestricted funds. Reusing one private
-key for multiple roles is a separate decision, requiring analysis of compromise
-and rotation consequences; it is not a prerequisite for common cryptography.
+operational keys. **Economic signing keys and Iroh transport keys must be distinct**
+(accepted user decision, 2026-09-11). Their common Ed25519 support does not require
+private-key reuse. Keep controller/funding authority separate from operational
+authority as well; the exact controller/recovery model still needs specification.
+Economic signers receive narrowly scoped grants without unrestricted access to
+the controller's funds. Transport authentication alone grants no spending rights.
+
+The existing PoCs reuse endpoint keys for economic statements. Preserve their
+signed bytes and outstanding agreement rights while specifying a new binding
+that separates communication authorization from economic signing. See the
+[identity and naming design](IDENTITY_AND_NAMING.md) for the recommended boundary.
 
 Do not treat a transport handshake as a transferable signed quote or receipt.
 Application signatures should bind a protocol/domain, network, agreement, parties,
