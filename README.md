@@ -59,6 +59,11 @@ profiles serve known counterparties, using localnet/testnet funds. The intended
 core will support communication without requiring a funded agreement; payment
 methods and optional integrations such as A2A will build on that foundation.
 
+The user-proposed next use case is a named local coordinator commissioning a
+remote Codex research agent. The [design proposal](docs/RESEARCH_AGENT_PROPOSAL.md)
+separates service behavior, pricing policies, and settlement, and identifies the
+foundation contracts required before implementation.
+
 Start with the [positioning and problem definition](docs/POSITIONING.md), then
 read the [north star](docs/NORTH_STAR.md) and the
 [agent protocol research](docs/research/AGENT_PROTOCOLS.md).

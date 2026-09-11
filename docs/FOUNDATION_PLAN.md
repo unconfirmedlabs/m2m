@@ -12,6 +12,10 @@ economic/transport key separation was subsequently accepted on 2026-09-11, while
 the detailed lifecycle and naming policies remain proposed. There is not yet a
 frozen core or payment binding for these changes.
 
+The [named research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) provides a concrete
+next use case to test these boundaries. Its service, pricing, and payment choices
+remain proposed and follow the F0–F4 dependency order below.
+
 ## Assessment
 
 The concern is supported by the code: m2m has working payment applications and

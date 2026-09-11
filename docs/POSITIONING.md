@@ -16,7 +16,7 @@ The [PoC scope](POC_SCOPE.md) makes this hypothesis concrete: one
 fixed-price service exchange between known operators, transported over Iroh and
 settled from Sui escrow on a signed buyer acceptance, with a timeout refund path.
 It separates a deterministic technical fixture from the still-open customer
-workflow. Paid inference has not been selected as the first use case. The economic
+workflow. Paid inference was not selected for that fixture. The economic
 rule now defines the technical experiment authorized on 2026-09-10. Implementation
 and validation are documented in the [quickstart](QUICKSTART.md) and
 [validation record](VALIDATION.md); customer positioning remains unvalidated.
@@ -27,6 +27,13 @@ funding and settlement transactions. One deposit should support ten jobs with
 offchain payment authorizations, followed by one close. This changes the economic
 rule to bounded prepayment and preserves the original escrow as another method.
 Actual ZK proofs and a production customer workflow remain separate decisions.
+
+On 2026-09-11, the user proposed a local coordinator and a remote Codex research
+agent, named `local.nozomi.sui` and `research.nozomi.sui`, as a next use case.
+The [research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) evaluates that workflow
+against the foundation plan. It separates the research service, pricing policy,
+and settlement method; free then fixed-price prepaid turns are recommendations,
+not an implemented service or an accepted token-pricing rule.
 
 ## Accepted direction
 
@@ -81,6 +88,7 @@ additional questions about discovery, fraud, evaluation, and liquidity.
 | Candidate workflow | Why it could fit | What could make it a poor first choice |
 |---|---|---|
 | Fixed-price compute/data job between known operators | Clear parties, price, work reference, and economic outcome | Existing hosted APIs may already be easier and sufficient |
+| Named coordinator commissioning a Codex research agent | Concrete user-proposed workflow for identity, signed messages, conversation recovery, and optional pricing | Requires the general foundation and a work adapter; usage evidence and payment fairness remain method-specific |
 | Budgeted infrastructure service purchased from another operator | Repeated autonomous work and explicit spending authority | Broad operational permissions and long-running resource lifecycle |
 | Paid inference across independently operated machines | Natural SDK integration and potentially variable deployment locations | Model quality, usage metering, privacy, and competing hosted APIs complicate the first test |
 | Public marketplace for arbitrary agents | Broad long-term application | Requires supply, discovery, trust, and demand before the protocol can prove value |

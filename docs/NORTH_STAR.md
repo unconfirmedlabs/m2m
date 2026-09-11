@@ -25,6 +25,9 @@ for the next iteration, not a change to existing wire or signing formats.
 The [foundation assessment and plan](FOUNDATION_PLAN.md) evaluates the shared
 contracts that need to precede implementing that draft and recommends their
 dependency order.
+The [named research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) applies those
+boundaries to a prospective Codex service with independently selected pricing
+and settlement; its terms and implementation remain proposed.
 
 ## 1. Make the benefit concrete
 

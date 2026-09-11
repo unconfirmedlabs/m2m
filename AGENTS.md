@@ -24,6 +24,7 @@ must not require an LLM or a particular agent framework.
 - [Positioning](docs/POSITIONING.md): problem hypothesis, alternatives, and open decisions.
 - [Foundation assessment and plan](docs/FOUNDATION_PLAN.md): current architectural gaps and recommended dependency order; proposed work, not a frozen core contract.
 - [Identity and naming recommendation](docs/IDENTITY_AND_NAMING.md): Agent/key separation, rotation, and an optional SuiNS-to-Agent binding; proposed design with checked upstream evidence.
+- [Named research-agent proposal](docs/RESEARCH_AGENT_PROPOSAL.md): proposed coordinator/Codex use case; service, pricing, and settlement boundaries; prerequisite foundation work and explicit prepayment limits.
 - [Message examples](examples/messages/README.md): every current wire message, with checked signatures and explicit implementation status.
 - [Core message proposal](docs/CORE_MESSAGE_PROPOSAL.md): draft native messaging foundation; not implemented or a released wire contract.
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
@@ -40,7 +41,9 @@ Current stage: the signed cumulative-channel PoC is implemented alongside the
 existing per-job escrow. See [channel validation](docs/CHANNEL_VALIDATION.md)
 for localnet, public testnet, recovery, and cross-region Fly evidence. Preserve
 one-job prepayment exposure, durable recovery, and the existing escrow ABI/wire
-meanings. No GPU, inference service, or actual ZK prover is part of this scope.
+meanings. No GPU, inference service, or actual ZK prover is part of the implemented
+fixture scope. The named Codex research-agent use case is a subsequent proposal,
+not an implemented profile or a reason to skip the foundation contracts.
 Keep measured technical behavior separate from customer demand and production
 readiness. Further protocol changes should start from the specification and the
 explicit guarantees of the selected settlement method.
