@@ -2,17 +2,40 @@
 
 A new foundational standard for autonomous software to communicate and transact,
 using **Iroh for transport** and **Sui for identity and economic programmability**.
-This is the project direction; the implementation is currently a paid-exchange
-proof of concept. An agent can be an ordinary process, service, or device.
+This is the project direction; the implementation is experimental. It includes
+native unpaid messaging and generic streaming payments alongside the original
+paid-exchange proof of concept. An agent can be an ordinary process, service, or device.
 
 **[Explore every current message](examples/messages/README.md)** ·
 [Foundation assessment and plan](docs/FOUNDATION_PLAN.md) ·
-[Draft core messaging design](docs/CORE_MESSAGE_PROPOSAL.md)
+[Native core contract](docs/NATIVE_CORE_SPEC.md)
 
-The examples cover all 12 channel messages and all 7 escrow request/response
-shapes, with recovery variants. Channel `payment.settlement` is specified but has
-no runtime sender or handler. General messaging and service descriptions are
-proposed next steps, separate from the current wire formats.
+The examples cover native admission, free messaging, service descriptions and
+streaming payments, plus all 12 legacy channel and 7 escrow shapes. Legacy channel
+`payment.settlement` remains specified-only, with no runtime sender or handler.
+
+## Native implementation
+
+`m2m/core/1` authenticates qualified Agents over Iroh without a deposit. Separate
+transport and economic keys bind a standard, negotiated streaming extension to
+generic Sui unit/rate policies. Independent Rust/TypeScript peers, durable credit
+and delivery recovery, and a real Luna `xhigh` text-worker exchange have passed
+local validation. Named testnet provisioning is pending the controlling wallet.
+
+[Run native](docs/NATIVE_QUICKSTART.md) · [Validation and limits](docs/NATIVE_VALIDATION.md) ·
+[Streaming contract](docs/STREAMING_V1_SPEC.md) · [Compatibility](docs/NATIVE_COMPATIBILITY.md)
+
+The original native CLI uses a programmed protocol client. The new
+[agent-services specification](docs/AGENT_SERVICES_SPEC.md) and
+[implementation contract](docs/AGENT_SERVICES_IMPLEMENTATION.md) add coordinator
+tool-loop plumbing, bounded research tools, continuing conversations and durable public
+events without changing native v1 economic signatures. See the
+[runner and validation limits](docs/AGENT_SERVICES_VALIDATION.md).
+Live profiles are deliberately blocked before funding until tool isolation is
+validated; full live web research also needs separately supplied credentials.
+The [Tailwind/Fly investor demo](docs/LIVE_DEMO_PROPOSAL.md) is not deployed.
+
+## Original fixed-file proof of concept
 
 The proof of concept exchanges a fixed test file between two processes over Iroh.
 The optional `sui.channel.v1` method reserves one Sui deposit, carries cumulative
@@ -56,18 +79,17 @@ routing was unavailable under the default Fly network configuration.
 
 The first real customer workflow remains open. The current experimental payment
 profiles serve known counterparties, using localnet/testnet funds. The intended
-core will support communication without requiring a funded agreement; payment
-methods and optional integrations such as A2A will build on that foundation.
+core now supports communication without requiring a funded agreement; optional
+integrations such as A2A remain separate future adapters.
 
-The user-proposed next use case is a named local coordinator commissioning a
-remote Codex research agent. The [design proposal](docs/RESEARCH_AGENT_PROPOSAL.md)
-separates service behavior, pricing policies, and settlement, and identifies the
-foundation contracts required before implementation.
+The [research-agent design proposal](docs/RESEARCH_AGENT_PROPOSAL.md) motivated
+the native implementation. Its broader research product behavior is not established
+by a successful paid text response.
 
 [Native streaming payments](docs/STREAMING_PAYMENTS.md) are an accepted part of
 the intended m2m foundation: reusable funded channels for real-time per-unit
-services. The generic primitive remains specification/implementation work beyond
-the current fixed-file channel.
+services. The experimental generic implementation is separate from the fixed-file
+channel and does not change its prepaid one-job exposure or economic signatures.
 
 Start with the [positioning and problem definition](docs/POSITIONING.md), then
 read the [north star](docs/NORTH_STAR.md) and the

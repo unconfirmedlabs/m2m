@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "status": "plan-not-deployed",
+  "organization": "CHOOSE_ORGANIZATION",
+  "network": "testnet",
+  "image": null,
+  "conversation": null,
+  "configuration_hash": null,
+  "agents": { "buyer": null, "provider": null },
+  "roles": {
+    "coordinator": {
+      "app": "CHOOSE_NEW_COORDINATOR_APP", "region": "iad",
+      "machine_count": 1, "machine_id": null,
+      "cpu_kind": "shared", "cpus": 1, "memory_mb": 1024,
+      "volume_count": 1, "volume_name": "m2m_state", "volume_gib": 1,
+      "volume_id": null, "mount": "/data", "state_root": "/data/m2m",
+      "public_origin": null, "bind_host": "0.0.0.0", "port": 8080
+    },
+    "provider": {
+      "app": "CHOOSE_NEW_PROVIDER_APP", "region": "ams",
+      "machine_count": 1, "machine_id": null,
+      "cpu_kind": "shared", "cpus": 1, "memory_mb": 1024,
+      "volume_count": 1, "volume_name": "m2m_state", "volume_gib": 1,
+      "volume_id": null, "mount": "/data", "state_root": "/data/m2m",
+      "public_origin": null, "bind_host": "fly-local-6pn", "port": 8081
+    }
+  },
+  "retention": "Stop only recorded Machines; retain apps, volumes and journals.",
+  "live_acceptance": "not-run"
+}

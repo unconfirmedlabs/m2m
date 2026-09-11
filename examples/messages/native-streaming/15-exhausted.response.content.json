@@ -1,0 +1,5 @@
+{
+  "type": "waiting",
+  "reason": "credit_exhausted",
+  "upstream_usage": null
+}

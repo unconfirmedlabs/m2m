@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "checked_at": "2026-09-11T06:42:01.978Z",
+  "mode": "read-only-preflight",
+  "claims_live_research": false,
+  "claims_fly_deployment": false,
+  "credentials": {
+    "openai_api_key_available": false,
+    "brave_search_key_available": false,
+    "known_codex_auth_has_api_key": false,
+    "known_codex_auth_has_token_container": true,
+    "codex_tokens_repurposed_for_api": false,
+    "nozomi_controller_wallet_path_supplied": false
+  },
+  "fly": {
+    "authenticated": true,
+    "in_scope_existing_apps": [
+      { "name": "m2m-iroh-poc-20260910", "organization": "personal", "status": "suspended", "modified": false }
+    ],
+    "resources_created": 0
+  },
+  "sui": {
+    "network": "testnet",
+    "native_testnet_state_present": false,
+    "parent": {
+      "name": "nozomi.sui",
+      "registration": "0x3f7a86bb5acaf9781399ba2cc710ae5e9dfd9855faaf413bc7179796f19a0bac",
+      "owner": "0x1a91b4fd553ea4d37124c3239b296bcbb6d17e13309164cb90daa5fba0a4bccf",
+      "expires_ms": "1820626053220",
+      "registration_record_and_clock_verified": true
+    },
+    "leaves": { "local.nozomi.sui": null, "research.nozomi.sui": null },
+    "transactions_submitted": 0
+  },
+  "baseline_checks": {
+    "npm_run_typecheck": "passed",
+    "npm_run_agent_services_tests": "passed",
+    "npm_run_native_tests": "passed",
+    "cargo_test_locked": { "passed": 45, "ignored": 2, "failed": 0 },
+    "move_streaming_tests": { "passed": 29, "failed": 0 },
+    "inference_in_these_tests": "explicit injected fixtures, not real LLMs"
+  },
+  "https_fetch_probe_before_repair": {
+    "mode": "real-https-only-no-llm-no-search-no-payment",
+    "node_version": "v22.23.2",
+    "tool_fetch_attempts": 3,
+    "tool_fetch_successes": 0,
+    "diagnosed_error": "ERR_INVALID_IP_ADDRESS",
+    "cause": "Pinned lookup returned single-address callback shape when Node requested all=true",
+    "standalone_family4_autoselect_disabled_probe": {
+      "https://fly.io/docs/machines/overview/": { "status": 200, "body_bytes": 166107 },
+      "https://www.iroh.computer/": { "status": 200, "body_bytes": 301778 }
+    },
+    "source_size_limit_note": "Both sampled HTML bodies exceed the unchanged 131072-byte tool response cap; successful ordinary HTTPS does not imply successful bounded tool fetch."
+  },
+  "https_fetch_probe_after_repair": {
+    "checked_date": "2026-09-11",
+    "mode": "real-https-only-no-llm-no-search-no-payment",
+    "production_bounded_web_tools": true,
+    "injected_http_or_dns": false,
+    "response_cap_bytes": 131072,
+    "results": [
+      { "url": "https://fly.io/docs/machines/overview/", "success": false, "code": "limit_exceeded" },
+      { "url": "https://fly.io/robots.txt", "success": true, "tool_result_bytes": 372, "citation_id": "s1" },
+      { "url": "https://www.iroh.computer/robots.txt", "success": true, "tool_result_bytes": 374, "citation_id": "s1" }
+    ],
+    "production_repair": "Pinned single-address IPv4 lookup with family=4 and autoSelectFamily=false; default TLS and hostname verification retained",
+    "regression": "Real Node HTTPS lookup test imports the request-options helper used by defaultHttpGet; independent Astra review and test passed"
+  },
+  "deployment_preparation": {
+    "checked_date": "2026-09-11",
+    "status": "proposal-not-deployed",
+    "roles": [
+      { "role": "coordinator", "proposed_region": "iad", "machines": 1, "cpu_kind": "shared", "cpus": 1, "memory_mb": 1024, "volume_gib": 1, "compute_usd_per_30_days": "5.70" },
+      { "role": "provider", "proposed_region": "ams", "machines": 1, "cpu_kind": "shared", "cpus": 1, "memory_mb": 1024, "volume_gib": 1, "compute_usd_per_30_days": "5.92" }
+    ],
+    "price_source": "https://fly.io/docs/about/pricing/",
+    "price_evidence": "Actual region-specific HTML tables started-machines-pricing-matrix-iad and started-machines-pricing-matrix-ams",
+    "volume_usd_per_gib_month": "0.15",
+    "approx_compute_and_volume_usd_month": "11.92",
+    "excluded_from_baseline": ["model inference", "search", "data transfer", "stopped root filesystems", "snapshots"],
+    "resource_ids_allocated": false,
+    "build_environment": {
+      "node": "v22.23.2",
+      "cargo": "1.97.1",
+      "flyctl": "0.4.101",
+      "docker_on_path": false,
+      "podman_on_path": false,
+      "rootless_user_namespace_probe": {
+        "checked_at_utc": "2026-09-11 07:49:00",
+        "command": "unshare --user --map-root-user true",
+        "exit_code": 1,
+        "result": "uid_map write denied: Operation not permitted",
+        "claims_all_build_paths_unavailable": false
+      },
+      "cached_playwright_chromium_available": true,
+      "container_build_validated": false,
+      "native_bridge_release_build": {
+        "command": "cargo build --locked --release --bin native-bridge --jobs 2",
+        "result": "passed",
+        "elapsed_seconds": "20.25",
+        "binary_sha256": "887d59b6dbdc401ebd2110e3679e46351a0256f13a93c685aa07531b296c05a7",
+        "cargo_lock_sha256": "4d58b22251722b6e3b585158ceaec18b4437d5de4e7e0ffe64eb4da7bc1fa400",
+        "help_confirms_relay_option": true,
+        "claims_container_or_cross_machine_validation": false
+      }
+    }
+  }
+}

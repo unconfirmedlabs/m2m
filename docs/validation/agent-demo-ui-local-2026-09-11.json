@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "checked_date": "2026-09-11",
+  "mode": "local-ui-validation-only",
+  "live_backend": false,
+  "live_inference": false,
+  "live_research": false,
+  "payments": false,
+  "fly_deployment": false,
+  "ui_acceptance": "incomplete",
+  "versions": { "node": "22.23.2", "vite": "8.3.0", "playwright": "1.63.0" },
+  "checks": [
+    { "command": "npm run agent-demo-production-boundary-tests", "result": "passed", "cases": 5,
+      "scope": "Actual production bundle, loopback HTTP failure responses and Chromium; no successful session injected" },
+    { "command": "npm run agent-demo-ui-contract-tests", "result": "passed", "cases": 13,
+      "scope": "Actual browser API/reducer/accounting modules with explicit controlled inputs; not full Astra matrix" },
+    { "command": "npm --prefix ui/agent-demo test", "result": "passed", "files": 5, "cases": 20 },
+    { "command": "npm --prefix ui/agent-demo run build", "result": "passed",
+      "scope": "UI TypeScript and production build using existing installed dependencies; not fresh locked install" },
+    { "command": "npm run typecheck", "result": "passed" },
+    { "command": "npm --prefix ui/agent-demo run smoke", "result": "passed", "cases": 3,
+      "scope": "Login and explicitly mocked dashboard/control checks; root visually inspected labeled desktop/mobile captures" },
+    { "command": "npm run agent-demo-layout-browser-tests", "result": "failed",
+      "scope": "Production bundle with coherent, visibly labeled viewer fixture over loopback; actual element rectangles",
+      "failure": "390px Iroh status clipped beyond panel and viewport",
+      "measurements": {
+        "viewport_width": 390,
+        "document_scroll_width": 390,
+        "panel_right": 370,
+        "coordinator_status_right": 388.640625,
+        "provider_status_right": 438.609375
+      }
+    }
+  ],
+  "production_boundary": {
+    "test_sha256": "02a230c21716b6844388901b01e65c409658bee1abecd29b9c101df2dec905f2",
+    "vite_config_sha256": "00da7bf193e286e4e742dcb2705668d47e59037cd29a946b2c11e4d7d488f88a",
+    "ui_package_sha256": "5b598d38317b4b54b5ebc372075b5b269c6c263e2d829be9f2f7bd51d3c575a4",
+    "ui_lock_sha256": "f24b8a3941b80dc2a8e3bc2c48d2a1b50f6cadc1b7b3469ca5d38ca8a8b75288",
+    "app_sha256": "01579c24582833b3ed50068c5552bf728a13e77306a517c2f168934ab381edac",
+    "api_sha256": "328641eae60f259ae3987868b44b341166ccdc1a8fbeadc29b5dd0d2edfd4280",
+    "reducer_sha256": "78013013b03e8d50b775405839743eb5d550970c381e060a6e4712db270b8f81",
+    "accounting_sha256": "0b774967b29ad1a12f9cd0f7c86bfd8106bdc8d7b454ddecd90535981be52425",
+    "styles_sha256": "d165e62399e646dd5d5c48be3a237c3ca2e80ce8dfa24fc5851dfe109d5ec351",
+    "included_runtime_modules": 19,
+    "shared_helper_installed": false,
+    "copied_public_assets": 0,
+    "source_maps": 0,
+    "external_page_requests": 0,
+    "cases": [
+      { "name": "unavailable-json", "api_requests": 1, "error_code": "backend_unavailable" },
+      { "name": "missing-html", "api_requests": 1, "error_code": "invalid_json" },
+      { "name": "unavailable-malformed", "api_requests": 1, "error_code": "invalid_json" },
+      { "name": "unauthorized-html", "api_requests": 1, "error_code": "unauthorized" },
+      { "name": "connection-lost", "api_requests": 1, "error_code": "network_unavailable" }
+    ],
+    "artifacts": [
+      { "file": "assets/index-D2L6Mqo8.js", "bytes": 257082, "sha256": "096a032bdb9b9988ae8891f4c08fdedbe4c11d5b3cf77598a3b28def793f0499" },
+      { "file": "assets/index-m39o14wQ.css", "bytes": 16541, "sha256": "5df5e0a48ec86cf7ae08cc0a9932e839892f52033078b957ad16ab4ab2d9142b" },
+      { "file": "index.html", "bytes": 479, "sha256": "7a6e697a695f925438eb527fbd6a86627054815b76ab2d1723bfd8ba1f6eae24" }
+    ],
+    "disk_build_matches_in_memory": true
+  },
+  "remaining": [
+    "Shared helper E1-E7 correction, independent review and actual API/reducer installation",
+    "Broader U1-U6 review including snapshot/history, controls, authorization lifecycle and receipts",
+    "390px status layout correction without hiding overflow",
+    "Real hosted lifecycle, authenticated HTTP/projection and end-to-end browser integration",
+    "Live model, research, Iroh/Sui and Fly acceptance"
+  ]
+}

@@ -7,8 +7,9 @@ on 2026-09-10 after reviewing alternatives. Existing agent protocols may integra
 above m2m or through adapters; they are not required bases.
 
 This is a product and architecture decision, not evidence of adoption. The current
-implementation proves a narrower paid-exchange mechanism. Customer demand, the
-smallest useful native core, and production guarantees still need validation.
+implementation provides experimental native messaging and streaming payments
+alongside the narrower paid-exchange fixtures. Customer demand and production
+guarantees still need validation; a working core alone establishes neither.
 See the [current examples](../examples/messages/README.md) and the separate
 [draft core proposal](CORE_MESSAGE_PROPOSAL.md).
 
@@ -36,7 +37,11 @@ and settlement method. The user clarified the economic direction: fund a channel
 and pay for responses incrementally in real time through signed offchain updates,
 independent of buyer satisfaction. Adapt that tunnel flow to m2m; a fixed-price
 research fixture or postpaid acceptance scheme is not a prerequisite. Exact rates,
-the Codex usage binding, and the m2m research implementation remain unfinished.
+production pricing and the complete research product remain unvalidated. A later
+[native local implementation](NATIVE_VALIDATION.md) verifies a byte-priced live
+Codex text response, not token-level compute backpressure or source-seeking research.
+The [investor demo requirements](LIVE_DEMO_PROPOSAL.md) now call for two genuine
+LLM agents, a Tailwind interface, and real payments without scripted behavior.
 
 ## Accepted direction
 

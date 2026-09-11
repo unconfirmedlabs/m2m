@@ -1,7 +1,9 @@
 # Native streaming payments
 
-Decision date: 2026-09-11. Status: accepted architectural direction; the generic
-wire contract and implementation remain unfinished. The user selected tunneled
+Decision date: 2026-09-11. Status: accepted architectural direction, with an
+experimental [generic v1 contract and implementation](STREAMING_V1_SPEC.md).
+See [local evidence and remaining testnet work](NATIVE_VALIDATION.md) and
+[explicit legacy compatibility](NATIVE_COMPATIBILITY.md). The user selected tunneled
 streaming payments as a built-in m2m primitive applicable to real-time per-unit
 pricing. The [research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) is its first
 proposed application. Sui and Iroh remain requirements.
@@ -39,10 +41,8 @@ schemas, signing rules, reference implementation, and conformance tests. Service
 should compose with that implementation directly. Additional settlement methods
 and service-specific pricing policies can extend it.
 
-**Recommended placement: a standard m2m extension using core primitives.** The
-user accepted built-in streaming payments and subsequently asked whether the
-channel belongs in core or an extension. Extension placement is the recommendation
-here, not yet a separately accepted user decision. Built-in means standardized
+**Accepted placement: a standard m2m extension using core primitives.** Issue #1
+subsequently accepted this placement for the implementation. Built-in means standardized
 and shipped with the reference SDK; it does not require every peer to implement
 channel accounting as a condition of basic communication.
 
@@ -91,7 +91,8 @@ integer quantities and integer rates, with explicit denominators and cumulative
 rounding, is a useful initial family. This permits different input/output rates
 without putting the concept of a token into the generic channel engine. Pin each
 dimension's meaning so the same quantity cannot be reinterpreted mid-agreement.
-Exact encoding, allowed dimension count, and extension negotiation are spec work.
+The experimental v1 contract now specifies exact encoding, 1–8 dimensions, and
+explicit core feature negotiation; it is not a released interoperability standard.
 
 An arbitrary price callback or an opaque terms hash is insufficient for a claim
 of shared formula enforcement. The chosen method must specify what the peers
@@ -146,4 +147,6 @@ request/payment replay, wrong units or rates, cumulative rounding, duplicate
 delivery, crash recovery, exact close, unilateral redemption, and deadline races.
 Use at least two unit policies over the same engine to demonstrate that the
 primitive is reusable beyond inference. Examples must distinguish implemented
-messages from this unfinished generic contract.
+messages from design proposals and synthetic fixtures from live evidence. The
+generic v1 tests now exercise bytes, records, and multi-counter policies; the
+legacy `sui.channel.v1` contract above is intentionally unchanged.

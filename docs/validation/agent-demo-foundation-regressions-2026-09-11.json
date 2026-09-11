@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "checked_date": "2026-09-11",
+  "checked_through_utc": "09:03",
+  "mode": "local-foundation-and-compatibility-regressions",
+  "versions": { "cargo": "1.97.1", "sui": "1.79.0-46f18562f1f5", "node": "22.23.2" },
+  "checks": [
+    { "command": "npm run native-tests", "result": "passed", "checked_at_utc": "08:58" },
+    { "command": "npm run agent-services-tests", "result": "passed", "checked_at_utc": "08:58",
+      "scope": "Explicit fixture inference/payment/crash cases and existing early live-enablement gate" },
+    { "command": "cargo test --locked --test native_core --jobs 2", "result": "passed", "tests_passed": 11,
+      "scope": "Includes real Iroh and independent TypeScript peer exchanges and saved-request restart" },
+    { "command": "cargo test --locked --jobs 2", "result": "passed", "tests_passed": 45, "tests_ignored": 2,
+      "ignored": [
+        "channel_peer_auth::unrelated_endpoint_cannot_request_offer_as_registered_buyer requires a running legacy provider/deployment",
+        "peer_auth::unauthorized_endpoint_cannot_claim_registered_buyer requires a running legacy provider and M2M_TEST_ROOT"
+      ]
+    },
+    { "command": "bash scripts/sui.sh move test --path move/streaming", "result": "passed", "tests_passed": 29 },
+    { "command": "bash scripts/sui.sh move test --path move/m2m", "result": "passed", "tests_passed": 25 },
+    { "command": "npm run vectors", "result": "passed" },
+    { "command": "npm run channel-vectors", "result": "passed" },
+    { "command": "npm run channel-journals", "result": "passed" },
+    { "command": "npm run message-examples", "result": "passed", "examples": 23,
+      "channel_shapes": 12, "escrow_shapes": 7, "rust_example_tests": 3 },
+    { "command": "git diff --check", "result": "passed" }
+  ],
+  "hashes": {
+    "Cargo.lock": "4d58b22251722b6e3b585158ceaec18b4437d5de4e7e0ffe64eb4da7bc1fa400",
+    "src/native_core.rs": "53031e987550831baf2290b094e3b9e97840902d6e75d05eb27356da9d7f5131",
+    "src/native_transport.rs": "8d9adc54c1698790aad7d62b7329fd6a4b28f94ad1cee1b239b0542e15881f62",
+    "tests/native_core.rs": "235c3ee25bbdce9b4b3ca5c93e279626a8ee1a13e36b84ce4af0da91f98b4d3c"
+  },
+  "limits": {
+    "new_runtime_acceptance": false,
+    "hosted_lifecycle_acceptance": false,
+    "live_inference": false,
+    "public_chain_transactions": false,
+    "suins_writes": false,
+    "fly_changes": false,
+    "investor_demo_complete": false
+  }
+}

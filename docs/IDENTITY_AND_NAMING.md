@@ -6,6 +6,11 @@ This develops the identity work in the [foundation plan](FOUNDATION_PLAN.md);
 it is not implemented or a replacement for the existing channel contract. m2m baseline:
 `a8b2cda6eccdd034cd539b79fa80c737981e4d3c`.
 
+Implementation update, 2026-09-11: a narrower experimental
+[native naming binding](NATIVE_NAMING_SPEC.md) and separate Agent package now exist.
+See [validation](NATIVE_VALIDATION.md) for local evidence and pending named testnet
+provisioning. The broader recommendations below retain their original status.
+
 ## Recommendation
 
 Use a qualified Sui Agent object as the durable identity. Authorize replaceable

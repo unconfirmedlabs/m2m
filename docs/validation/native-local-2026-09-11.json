@@ -1,0 +1,59 @@
+{
+  "checked_date": "2026-09-11",
+  "status": "experimental_local_validation_testnet_pending",
+  "network": "localnet",
+  "package_id": "0x48c388c4afb64b39dedc96e6573cc372d8114a8446e7b4b925d18f0a8ac59898",
+  "domain": "0x18d2bf51ad318829854fa447931244eeb69438a67fd2a48ebc857c05d660bb60",
+  "local_agent": "0xf0fd8b4d9e1ec601fba313a75dc7f48abaf0592294cc0fa702c63eacd8404754",
+  "research_agent": "0xab91ee13bc92bf7ce7ab61907b10f27226844387b79fbc8124712f8f33051b34",
+  "same_controller_wallet": true,
+  "distinct_transport_and_economic_keys_per_agent": true,
+  "live_run": {
+    "coordinator": "programmed_protocol_client",
+    "worker": "codex-gpt-5.6-luna-xhigh",
+    "web_research_enabled": false,
+    "channel": "0xb568a1e9fe20c87867a0ebce7c8b1218435703ca42972bd926590c1c193cac4f",
+    "free_messaging": true,
+    "credit_exhaustion_checked": true,
+    "credits": 7,
+    "output_bytes": 805,
+    "deposit_mist": "100000",
+    "authorized_mist": "238",
+    "delivered_mist": "215",
+    "redeemed_mist": "215",
+    "refunded_mist": "99785",
+    "settlement_digest": "9Sa7ryMHKJC5GNBhUVYmdMX4ndiq4sijiYXz2TiZbaG4"
+  },
+  "fixture_restarts": [
+    {
+      "fault": "after_durable_delivery",
+      "channel": "0x9b5cb04ddf45189d32743916f19c3b7811960a0cd241742a5d9785804757cd45",
+      "same_channel_after_restart": true,
+      "credits": 4,
+      "output_bytes": 448,
+      "deposit_mist": "100000",
+      "redeemed_mist": "126",
+      "refunded_mist": "99874",
+      "settlement_digest": "DixEgymizcN26gLztqYxKnL7ZfYN8sGvUyS36MtVoDYg"
+    },
+    {
+      "fault": "after_confirmed_close_before_local_result",
+      "channel": "0x034c7f1c47d502a1e10658718f145a9efbb22e6893bd502fc8154020a4179004",
+      "same_channel_after_restart": true,
+      "credits": 4,
+      "output_bytes": 448,
+      "deposit_mist": "100000",
+      "redeemed_mist": "126",
+      "refunded_mist": "99874",
+      "settlement_digest": "2GFMmckQpSu9UsnvCBddqfDGSHwVGu93roAXR4JdGuQk"
+    }
+  ],
+  "testnet_parent_read_only": {
+    "name": "nozomi.sui",
+    "registration": "0x3f7a86bb5acaf9781399ba2cc710ae5e9dfd9855faaf413bc7179796f19a0bac",
+    "owner": "0x1a91b4fd553ea4d37124c3239b296bcbb6d17e13309164cb90daa5fba0a4bccf",
+    "local_leaf_exists": false,
+    "research_leaf_exists": false,
+    "native_testnet_deployment_completed": false
+  }
+}

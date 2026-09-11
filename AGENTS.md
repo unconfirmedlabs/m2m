@@ -4,7 +4,8 @@
 
 m2m is building a new foundational standard for communication and economic
 coordination between autonomous software. This is the accepted project direction;
-the present implementation is a narrower paid-exchange proof of concept. **Iroh is the
+the present implementation is an experimental native core and streaming binding
+alongside narrower paid-exchange proofs of concept. **Iroh is the
 required transport; Sui is the required layer for economic programmability.**
 Their common Ed25519 support is an integration advantage. Preserve these choices
 unless the user changes them.
@@ -32,6 +33,9 @@ must not require an LLM or a particular agent framework.
 - [Native streaming payments](docs/STREAMING_PAYMENTS.md): accepted built-in primitive direction; common channel machinery, service-defined units, and unfinished compatibility/specification work.
 - [Message examples](examples/messages/README.md): every current wire message, with checked signatures and explicit implementation status.
 - [Core message proposal](docs/CORE_MESSAGE_PROPOSAL.md): draft native messaging foundation; not implemented or a released wire contract.
+- [Native implementation](docs/NATIVE_QUICKSTART.md): experimental core/streaming contracts, [compatibility](docs/NATIVE_COMPATIBILITY.md), and [validation limits](docs/NATIVE_VALIDATION.md).
+- [Live demo requirements](docs/LIVE_DEMO_PROPOSAL.md): Tailwind split screen and two real LLM agents; no scripted investor-demo behavior or fixture fallback.
+- [Agent services](docs/AGENT_SERVICES_SPEC.md): v2 continuing research conversations, bounded tools/budgets, [implementation contracts](docs/AGENT_SERVICES_IMPLEMENTATION.md), and [validation gates](docs/AGENT_SERVICES_VALIDATION.md).
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
 - [Payment messages and settlement methods](docs/SETTLEMENT_PROFILES.md): core payment vocabulary and optional cumulative channels; actual ZK proofs are a separate future method.
 - [Channel specification](docs/CHANNEL_SPEC.md) and [implementation plan](docs/CHANNEL_IMPLEMENTATION_PLAN.md): exact signing, recovery, and acceptance contract for the channel PoC.
@@ -47,8 +51,14 @@ existing per-job escrow. See [channel validation](docs/CHANNEL_VALIDATION.md)
 for localnet, public testnet, recovery, and cross-region Fly evidence. Preserve
 one-job prepayment exposure, durable recovery, and the existing escrow ABI/wire
 meanings. No GPU, inference service, or actual ZK prover is part of the implemented
-fixture scope. The named Codex research-agent use case is a subsequent proposal,
-not an implemented profile or a reason to skip the foundation contracts.
+fixture scope. A separate native core/generic streaming binding now has local
+Iroh, Sui and live Codex text-worker evidence. Named testnet provisioning remains
+pending. The original native coordinator is programmed. A separate agent-services
+runner now implements bounded tools and continuing conversations with localnet
+payment/restart evidence using fixture inference. Live profiles fail before funding
+under AS-20 until registered-only tool isolation is validated; preserve this gate.
+Full two-LLM web research, Fly and UI remain separate
+validation/deployment gates, not established product behavior.
 For that use case, the user selected a funded channel with incremental response
 payments through signed offchain updates. Adapt the tunnel flow; do not make
 subjective task completion or final-answer acceptance a payment prerequisite.

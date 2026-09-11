@@ -1,0 +1,749 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://m2m.unconfirmedlabs.com/schemas/native-core-v1.schema.json",
+  "title": "Experimental native m2m core v1 signed envelope",
+  "description": "Payload bytes require separate UTF-8 decoding and kind-specific validation. Schema alone does not validate signatures, BCS, exact u64 upper bounds, features, freshness, or references.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "message",
+    "signature"
+  ],
+  "properties": {
+    "message": {
+      "$ref": "#/$defs/Envelope"
+    },
+    "signature": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "maxItems": 64,
+      "minItems": 64
+    }
+  },
+  "$defs": {
+    "byte": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "bytes": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "maxItems": 65536
+    },
+    "bytes32": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "maxItems": 32,
+      "minItems": 32
+    },
+    "address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$"
+    },
+    "u64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "description": "Canonical decimal u64; runtime additionally rejects values above 18446744073709551615."
+    },
+    "AgentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network",
+        "package_id",
+        "domain",
+        "agent"
+      ],
+      "properties": {
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 64,
+          "minItems": 1
+        },
+        "package_id": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{64}$"
+        },
+        "domain": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{64}$"
+        },
+        "agent": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{64}$"
+        }
+      }
+    },
+    "Authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agent",
+        "controller",
+        "transport_key",
+        "economic_key",
+        "generation",
+        "read_at_ms",
+        "valid_until_ms"
+      ],
+      "properties": {
+        "agent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "network",
+            "package_id",
+            "domain",
+            "agent"
+          ],
+          "properties": {
+            "network": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "maxItems": 64,
+              "minItems": 1
+            },
+            "package_id": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            },
+            "domain": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            },
+            "agent": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            }
+          }
+        },
+        "controller": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{64}$"
+        },
+        "transport_key": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "economic_key": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "generation": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "description": "Canonical decimal u64; runtime additionally rejects values above 18446744073709551615."
+        },
+        "read_at_ms": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "description": "Canonical decimal u64; runtime additionally rejects values above 18446744073709551615."
+        },
+        "valid_until_ms": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "description": "Canonical decimal u64; runtime additionally rejects values above 18446744073709551615."
+        }
+      }
+    },
+    "Envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "sender",
+        "recipient",
+        "generation",
+        "id",
+        "correlation",
+        "created_ms",
+        "expires_ms",
+        "kind",
+        "payload"
+      ],
+      "properties": {
+        "purpose": {
+          "const": [
+            109,
+            50,
+            109,
+            47,
+            99,
+            111,
+            114,
+            101,
+            47,
+            109,
+            101,
+            115,
+            115,
+            97,
+            103,
+            101,
+            47,
+            118,
+            49
+          ]
+        },
+        "sender": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "network",
+            "package_id",
+            "domain",
+            "agent"
+          ],
+          "properties": {
+            "network": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "maxItems": 64,
+              "minItems": 1
+            },
+            "package_id": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            },
+            "domain": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            },
+            "agent": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            }
+          }
+        },
+        "recipient": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "network",
+            "package_id",
+            "domain",
+            "agent"
+          ],
+          "properties": {
+            "network": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "maxItems": 64,
+              "minItems": 1
+            },
+            "package_id": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            },
+            "domain": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            },
+            "agent": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            }
+          }
+        },
+        "generation": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "description": "Canonical decimal u64; runtime additionally rejects values above 18446744073709551615."
+        },
+        "id": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "correlation": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "maxItems": 32,
+              "minItems": 32
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_ms": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "description": "Canonical decimal u64; runtime additionally rejects values above 18446744073709551615."
+        },
+        "expires_ms": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "description": "Canonical decimal u64; runtime additionally rejects values above 18446744073709551615."
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "enum": [
+                "core.hello",
+                "core.welcome",
+                "core.confirm",
+                "core.ready",
+                "agent.describe",
+                "agent.description",
+                "message.send",
+                "message.receipt",
+                "core.error"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^extension\\.[a-z0-9._/-]{1,96}$"
+            }
+          ]
+        },
+        "payload": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 65536
+        }
+      }
+    },
+    "Hello": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge",
+        "required",
+        "optional"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9._/-]{1,96}$"
+          },
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9._/-]{1,96}$"
+          },
+          "maxItems": 16,
+          "uniqueItems": true
+        }
+      }
+    },
+    "Welcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hello_hash",
+        "challenge",
+        "required",
+        "optional",
+        "selected"
+      ],
+      "properties": {
+        "hello_hash": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "challenge": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9._/-]{1,96}$"
+          },
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9._/-]{1,96}$"
+          },
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "selected": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9._/-]{1,96}$"
+          },
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      }
+    },
+    "SessionBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session"
+      ],
+      "properties": {
+        "session": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        }
+      }
+    },
+    "MessageBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "service",
+        "content_type",
+        "content"
+      ],
+      "properties": {
+        "session": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "content_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 65536
+        }
+      }
+    },
+    "ExtensionBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "content"
+      ],
+      "properties": {
+        "session": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 65536
+        }
+      }
+    },
+    "ServiceDescription": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "input_media_type",
+        "output_media_type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "input_media_type": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "output_media_type": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "DescriptionBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "services"
+      ],
+      "properties": {
+        "session": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "description",
+              "input_media_type",
+              "output_media_type"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "input_media_type": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "output_media_type": {
+                "type": "string",
+                "maxLength": 128
+              }
+            }
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "ReceiptBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "message_id",
+        "commitment",
+        "state",
+        "result"
+      ],
+      "properties": {
+        "session": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "message_id": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "commitment": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "maxItems": 32,
+          "minItems": 32
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "dispatching",
+            "completed",
+            "uncertain"
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "maxItems": 65536
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ErrorBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "code",
+        "detail"
+      ],
+      "properties": {
+        "session": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "maxItems": 32,
+              "minItems": 32
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "code": {
+          "enum": [
+            "invalid_message",
+            "unauthorized",
+            "stale_authority",
+            "unsupported_feature",
+            "message_conflict",
+            "expired",
+            "overloaded",
+            "unknown_service",
+            "uncertain_dispatch",
+            "storage_failure",
+            "internal"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    }
+  }
+}

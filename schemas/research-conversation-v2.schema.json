@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://m2m.local/schemas/research-conversation-v2.schema.json",
+  "title": "m2m research conversation v2",
+  "oneOf": [
+    { "$ref": "#/$defs/credit" },
+    { "$ref": "#/$defs/start" },
+    { "$ref": "#/$defs/poll" },
+    { "$ref": "#/$defs/statusCommand" },
+    { "$ref": "#/$defs/cancel" },
+    { "$ref": "#/$defs/finish" },
+    { "$ref": "#/$defs/close" },
+    { "$ref": "#/$defs/offerCommand" },
+    { "$ref": "#/$defs/fundedCommand" },
+    { "$ref": "#/$defs/offerResponse" },
+    { "$ref": "#/$defs/fundedResponse" },
+    { "$ref": "#/$defs/response" }
+  ],
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "hash": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/byte" }], "items": { "$ref": "#/$defs/byte" }, "minItems": 32, "maxItems": 32 },
+    "byte": { "type": "integer", "minimum": 0, "maximum": 255 },
+    "u64": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" },
+    "request": {
+      "type": "object", "additionalProperties": false,
+      "required": ["version", "conversation", "request", "sequence", "prompt"],
+      "properties": {
+        "version": { "const": 2 }, "conversation": { "$ref": "#/$defs/id" }, "request": { "$ref": "#/$defs/id" },
+        "sequence": { "$ref": "#/$defs/u64", "pattern": "^[1-9][0-9]*$" }, "prompt": { "type": "string", "minLength": 1, "maxLength": 16384 }
+      }
+    },
+    "signedCredit": {
+      "type": "object", "additionalProperties": false, "required": ["payload", "signature"],
+      "properties": { "payload": { "type": "object" }, "signature": { "type": "array", "minItems": 64, "maxItems": 64, "items": { "$ref": "#/$defs/byte" } } }
+    },
+    "base": { "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op"], "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "type": "string" } } },
+    "credit": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "request", "credit"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "credit" }, "request": { "$ref": "#/$defs/request" }, "credit": { "$ref": "#/$defs/signedCredit" } }
+    },
+    "start": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "request_hash"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "start" }, "request_hash": { "$ref": "#/$defs/hash" } }
+    },
+    "poll": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "request_hash", "after_checkpoint"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "poll" }, "request_hash": { "$ref": "#/$defs/hash" }, "after_checkpoint": { "$ref": "#/$defs/hash" } }
+    },
+    "statusCommand": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "request_hash"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "status" }, "request_hash": { "$ref": "#/$defs/hash" } }
+    },
+    "cancel": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "request_hash"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "cancel" }, "request_hash": { "$ref": "#/$defs/hash" } }
+    },
+    "finish": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "request_hash", "discard_unpaid"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "finish" }, "request_hash": { "$ref": "#/$defs/hash" }, "discard_unpaid": { "type": "boolean" } }
+    },
+    "close": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "conversation", "last_request_hash"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "close" }, "conversation": { "$ref": "#/$defs/id" }, "last_request_hash": { "$ref": "#/$defs/hash" } }
+    },
+    "address": { "type": "string", "pattern": "^0x[0-9a-f]{64}$" },
+    "offerCommand": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "conversation", "nonce", "previous_channel"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "offer" }, "conversation": { "$ref": "#/$defs/id" }, "nonce": { "$ref": "#/$defs/hash" }, "previous_channel": { "type": ["string", "null"], "pattern": "^0x[0-9a-f]{64}$" } }
+    },
+    "fundedCommand": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "op", "conversation", "channel"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "op": { "const": "funded" }, "conversation": { "$ref": "#/$defs/id" }, "channel": { "$ref": "#/$defs/address" } }
+    },
+    "offerResponse": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "type", "offer", "policy", "service"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "type": { "const": "offer" }, "offer": { "type": "object" }, "policy": { "type": "object" }, "service": { "const": "service.research.conversation.v2" } }
+    },
+    "fundedResponse": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "type", "channel"],
+      "properties": { "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "type": { "const": "funded" }, "channel": { "$ref": "#/$defs/address" } }
+    },
+    "receipt": {
+      "type": "object", "additionalProperties": false,
+      "required": ["version", "conversation", "request", "request_hash", "sequence", "outcome", "reason", "checkpoint_hash", "delivered_units", "generated_output", "discarded_output", "continuation", "citations"],
+      "properties": {
+        "version": { "const": 2 }, "conversation": { "$ref": "#/$defs/id" }, "request": { "$ref": "#/$defs/id" }, "request_hash": { "$ref": "#/$defs/hash" }, "sequence": { "$ref": "#/$defs/u64" },
+        "outcome": { "enum": ["completed", "failed", "cancelled"] }, "reason": { "type": ["string", "null"] }, "checkpoint_hash": { "$ref": "#/$defs/hash" },
+        "delivered_units": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/u64" }, { "$ref": "#/$defs/u64" }], "items": false },
+        "generated_output": { "$ref": "#/$defs/u64" }, "discarded_output": { "$ref": "#/$defs/u64" }, "continuation": { "enum": ["ready", "requires_channel_close"] },
+        "citations": { "type": "array", "items": { "$ref": "#/$defs/citation" } }
+      }
+    },
+    "citation": {
+      "type": "object", "additionalProperties": false, "required": ["id", "url", "title", "retrieved_at_ms", "content_hash"],
+      "properties": { "id": { "type": "string", "pattern": "^s[1-9][0-9]*$" }, "url": { "type": "string", "pattern": "^https://", "maxLength": 2048 }, "title": { "type": "string", "maxLength": 256 }, "retrieved_at_ms": { "$ref": "#/$defs/u64" }, "content_hash": { "$ref": "#/$defs/hash" } }
+    },
+    "status": {
+      "type": "object", "additionalProperties": false,
+      "required": ["request_hash", "phase", "worker_state", "checkpoint_hash", "delivered_units", "authorized_units", "generated_output", "available_output", "input_dispatched", "cancel_requested"],
+      "properties": {
+        "request_hash": { "$ref": "#/$defs/hash" }, "phase": { "enum": ["credited", "launching", "running", "draining", "cancelling", "terminal", "uncertain"] },
+        "worker_state": { "type": ["string", "null"] }, "checkpoint_hash": { "$ref": "#/$defs/hash" },
+        "delivered_units": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/u64" }, { "$ref": "#/$defs/u64" }], "items": false },
+        "authorized_units": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/u64" }, { "$ref": "#/$defs/u64" }], "items": false },
+        "generated_output": { "$ref": "#/$defs/u64" }, "available_output": { "$ref": "#/$defs/u64" }, "input_dispatched": { "type": "boolean" }, "cancel_requested": { "type": "boolean" }
+      }
+    },
+    "response": {
+      "type": "object", "additionalProperties": false, "required": ["version", "op_id", "type"],
+      "properties": {
+        "version": { "const": 2 }, "op_id": { "$ref": "#/$defs/id" }, "type": { "type": "string" }, "code": { "type": "string" },
+        "ack": { "type": "object" }, "request_hash": { "$ref": "#/$defs/hash" }, "checkpoint": { "type": "object" },
+        "output": { "type": "array", "items": { "$ref": "#/$defs/byte" } }, "reason": { "type": "string" },
+        "status": { "$ref": "#/$defs/status" }, "receipt": { "$ref": "#/$defs/receipt" }, "confirmed": { "type": "boolean" }
+      }
+    }
+  }
+}

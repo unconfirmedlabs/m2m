@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "checked_date": "2026-09-11",
+  "scope": "local candidate full image and real blocked HTTP boot; initialized hosted runtime and live demo remain incomplete",
+  "claims_deployment": false,
+  "claims_live_agents_or_payments": false,
+  "external_resources_created": 0,
+  "fly_config_validation": {
+    "flyctl": "0.4.101",
+    "coordinator_strict": "passed",
+    "provider_strict": "passed",
+    "app_names": "unresolved CHOOSE_* template placeholders; no app creation"
+  },
+  "builder": {
+    "kind": "temporary local private-Unix-socket Docker daemon; no system service installed",
+    "privileged_mount_pid_namespace_probe": "passed",
+    "docker_version": "29.8.0",
+    "docker_archive_sha256": "cc21815cf1e2efed867dc9c8b96b46ffed8ea176ffab32b0aacb54726ded8f25",
+    "buildx_version": "0.37.0",
+    "buildx_sha256_verified_against_upstream_release": "ae43fa08c796b44efc86d7a63c55f73f7c35f3101188dea7bf93bcd6f99577ba",
+    "remote_builder_created": false,
+    "legacy_attempt": "interrupted before compile; require Buildx for Dockerfile-specific deny-by-default context",
+    "retained_for_next_host_build": true
+  },
+  "base_images": {
+    "rust": "rust:1.97.1-bookworm@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97",
+    "node": "node:22.23.2-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+    "digest_source": "Official library tags queried through Docker Hub API on checked date"
+  },
+  "stages": {
+    "bridge": {
+      "result": "passed",
+      "build_command": "docker buildx build --load --network host --target bridge --file deploy/agent-demo/Dockerfile --tag m2m-agent-demo-bridge:local .",
+      "compile": "cargo build --locked --release --bin native-bridge --jobs 2",
+      "compile_seconds": 178.8,
+      "local_image_index": "sha256:fbefd9c756269412e8a9ff0a7c578d2dae0c566896f425c090a7dbd2389759f2",
+      "context_bytes": 408780,
+      "executable_probe": "--help and listen --help passed as UID1000 with network none; relay flag present",
+      "claims_iroh_connection": false
+    },
+    "browser": {
+      "result": "passed",
+      "build_command": "docker buildx build --load --network host --target browser --file deploy/agent-demo/Dockerfile --tag m2m-agent-demo-browser:local .",
+      "clean_install": "root npm ci and UI npm ci, then actual tsc --noEmit && vite build",
+      "vite": "8.3.0",
+      "local_image_index": "sha256:d461de79f92e677fd90e3d571e3ec96af3e6c82b8f0fbc1633a2d5bb8dcf100c",
+      "javascript_asset": "assets/index-BlCHe7Ct.js",
+      "css_asset": "assets/index-CUeKmttw.css",
+      "claims_live_backend_browser_test": false
+    },
+    "dependencies": {
+      "result": "passed",
+      "install": "npm ci --omit=dev --ignore-scripts --no-audit --no-fund",
+      "local_image_index": "sha256:2852910d949da18fbb28bf747dc3506c06634e193f18f3ca2c853a88e324e296",
+      "sdk_imports": "Sui gRPC, SuiNS, noble curves and hashes imported as UID1000 with network none",
+      "tsx_and_esbuild_absent": true,
+      "typescript_note": "Retained production peer dependency of Sui SDK gql.tada/valibot; initial overly broad no-TypeScript assertion failed and was corrected after inspecting npm ls. No dependency files stripped."
+    },
+    "server_and_final_runtime": {
+      "result": "candidate-build-and-blocked-boot-passed-not-live",
+      "initial_candidate_index": "sha256:d474700eb1f0d2f1487ddf17f296c9a2853df086f5adcd02bd071aedf9d0567b",
+      "tested_candidate_index": "sha256:c2c29c494f1b7750e06fb24deda8427259107182eb8a2f5f176c38bc1a87bc82",
+      "tested_candidate_manifest": "sha256:3d639f47a272536128c7142b4b3c73589d89c5da73c1e8dbcbca0d08d46f29d0",
+      "tested_candidate_config": "sha256:8f2c9ff56ac44196b3797034b9ef9d43603b77f9251ccf3e3b8cb60766a8a2c4",
+      "image_bytes": 432354910,
+      "scope_note": "Candidate snapshot during bounded L1/L2 corrections, not final frozen reviewed code. Rebuild after their handoffs. A mid-edit missing evidence-module build failed, then the complete graph built successfully.",
+      "test_file": "deploy/agent-demo/image-smoke.mjs",
+      "test_environment": "network none; empty ephemeral /data tmpfs; nonroot UID1000; no initialized Agents, model/search/economic keys or wallet",
+      "http": { "static_index": 200, "unauthenticated_session": 401, "authenticated_session": 503, "operator_funding": 503 },
+      "readiness_code": "backend_unavailable",
+      "import_safe": true,
+      "public_response_contains_no_snapshot": true,
+      "project_modules": 25,
+      "project_tests_fixtures_setup_absent": true,
+      "no_manufactured_agent_or_economic_state": true,
+      "graceful_sigterm": "passed",
+      "pending": ["final reviewed L1/L2/model graph", "real host.json and role-specific secrets", "mounted UID1000 state initialization/export", "initialized ready runtime boot", "live model/Iroh/Sui/Fly evidence"]
+    }
+  },
+  "locks": {
+    "Cargo.lock": "4d58b22251722b6e3b585158ceaec18b4437d5de4e7e0ffe64eb4da7bc1fa400",
+    "package-lock.json": "b7589843d9f104aa09ea25dd3286865197def1c14589667aaea3aae982b19339",
+    "ui/agent-demo/package-lock.json": "f24b8a3941b80dc2a8e3bc2c48d2a1b50f6cadc1b7b3469ca5d38ca8a8b75288"
+  }
+}

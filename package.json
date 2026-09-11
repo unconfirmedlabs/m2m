@@ -8,10 +8,31 @@
     "vectors": "tsx scripts/verify-vectors.ts",
     "channel-vectors": "tsx scripts/verify-channel-vectors.ts",
     "channel-journals": "tsx scripts/test-channel-recovery.ts",
-    "message-examples": "python3 scripts/message-examples.py --check && cargo test --locked --test message_examples"
+    "message-examples": "python3 scripts/message-examples.py --check && cargo test --locked --test message_examples",
+    "native-tests": "tsx scripts/test-native-identity.ts && tsx scripts/test-native-peer.ts && tsx scripts/test-streaming-codec.ts && tsx scripts/test-streaming-engine.ts && tsx scripts/test-codex-worker.ts && tsx scripts/test-native-research.ts && npm run native-examples",
+    "native-examples": "python3 tests/native_core_schema.py && npm run native-streaming-examples",
+    "native-streaming-examples": "tsx scripts/native-streaming-examples.ts --check",
+    "agent-services": "tsx scripts/agent-services.ts",
+    "agent-runtime-tests": "tsx scripts/test-responses-transport.ts && tsx scripts/test-responses-worker.ts",
+    "agent-runtime-integration-tests": "tsx scripts/test-agent-runtime-integration.ts",
+    "agent-demo-vectors": "tsx scripts/test-agent-demo-vectors.ts",
+    "agent-demo-ui-contract-tests": "tsx scripts/test-agent-demo-ui-contract.ts",
+    "agent-demo-ui-http-tests": "tsx scripts/test-agent-demo-ui-http.ts",
+    "agent-demo-host-tests": "tsx scripts/test-agent-demo-auth.ts && tsx scripts/test-agent-demo-projection.ts && tsx scripts/test-agent-demo-provider-client.ts && tsx scripts/test-agent-demo-http.ts",
+    "agent-demo-boot-tests": "tsx scripts/test-agent-demo-components.ts && tsx scripts/test-agent-demo-boot-contract.ts && tsx scripts/test-agent-demo-runtime.ts",
+    "agent-demo-build": "node deploy/agent-demo/build.mjs && npm --prefix ui/agent-demo run build",
+    "agent-demo-economic-fixture-tests": "tsx scripts/test-agent-demo-economic-session.ts",
+    "agent-demo-public-fixture-tests": "tsx scripts/test-agent-demo-public-fixture.ts",
+    "agent-demo-event-contract-tests": "tsx scripts/test-agent-demo-event-contract.ts",
+    "agent-demo-contract-browser-tests": "node --import tsx scripts/test-agent-demo-contract-browser.mjs",
+    "agent-demo-production-boundary-tests": "node scripts/test-agent-demo-production-boundary.mjs",
+    "agent-demo-layout-browser-tests": "node --import tsx scripts/test-agent-demo-layout-browser.mjs",
+    "agent-services-tests": "tsx scripts/test-agent-worker.ts && tsx scripts/test-agent-web.ts && tsx scripts/test-research-conversation.ts && tsx scripts/agent-conversation-examples.ts --check && tsx scripts/test-agent-coordinator.ts && tsx scripts/test-agent-client-cancellation.ts && tsx scripts/test-agent-events.ts && tsx scripts/test-agent-exchange.ts && tsx scripts/test-agent-services.ts"
   },
   "dependencies": {
     "@mysten/sui": "2.30.0",
+    "@mysten/suins": "2.0.5",
+    "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0"
   },
   "devDependencies": {

@@ -1,5 +1,10 @@
 # m2m implemented message inventory
 
+Historical baseline inventory, checked 2026-09-10. A subsequent native core and
+generic streaming implementation now have their own [examples](../../examples/messages/README.md)
+and [validation record](../NATIVE_VALIDATION.md). The bounded implementation
+claims below describe the pinned commit, not the expanded current workspace.
+
 m2m implements payment, work-delivery, session-recovery, and error messages. Its
 application surface is a bounded paid-file exchange. General conversations,
 arbitrary tool calls, task orchestration, service discovery, and delegated work

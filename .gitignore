@@ -1,9 +1,14 @@
 /target/
 /node_modules/
+/dist/
 /.m2m/
 /move/m2m/build/
 /move/m2m/.move/
+/move/streaming/build/
+/move/streaming/.move/
 *.log
 .env
+.env.*
+!.env.example
 .DS_Store
 __pycache__/

@@ -1,0 +1,27 @@
+# TEMPLATE ONLY. No public service, public IP, browser token or buyer wallet.
+# Protected host config binds only fly-local-6pn:8081.
+app = "CHOOSE_NEW_PROVIDER_APP"
+primary_region = "ams"
+kill_signal = "SIGTERM"
+kill_timeout = 30
+
+[build]
+  dockerfile = "deploy/agent-demo/Dockerfile"
+  ignorefile = "deploy/agent-demo/.dockerignore"
+
+[deploy]
+  strategy = "rolling"
+  max_unavailable = 1
+
+[env]
+  NODE_ENV = "production"
+  M2M_NATIVE_BRIDGE = "/usr/local/bin/native-bridge"
+
+[[mounts]]
+  source = "m2m_state"
+  destination = "/data"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024

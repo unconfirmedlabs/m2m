@@ -6,6 +6,10 @@ requirements. The particular messages and semantics below are a proposal for
 iteration. All currently declared wire types have separate
 [validated examples](../examples/messages/README.md).
 
+The subsequent experimental [native v1 implementation contract](NATIVE_CORE_SPEC.md)
+now has running Rust/TypeScript peers and its own fixtures. It is the implemented
+contract, not an implicit implementation of the seven sketches below.
+
 The subsequent [foundation assessment](FOUNDATION_PLAN.md) identifies the model,
 identity/authority, admission, delivery, and compatibility decisions needed before
 implementing these sketches. The seven names and illustrative limits below are

@@ -8,8 +8,10 @@ through one useful workflow and a small integration surface.
 The foundational-standard direction, Sui, and Iroh are accepted requirements.
 The authorized proof of concept implements
 a fixed-file exchange to test transport authentication and economic settlement.
-The initial audience, exact core contract, and optional compatibility adapters remain
-open decisions. m2m will have native semantics; an existing agent protocol is not
+The initial audience and optional compatibility adapters remain open decisions.
+An experimental [native core contract](NATIVE_CORE_SPEC.md) and
+[streaming binding](STREAMING_V1_SPEC.md) now also have [local validation](NATIVE_VALIDATION.md).
+m2m has native semantics; an existing agent protocol is not
 a mandatory base. This document contains engineering guidance; a working
 technical experiment does not establish market demand.
 
@@ -27,7 +29,9 @@ contracts that need to precede implementing that draft and recommends their
 dependency order.
 The [named research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) applies those
 boundaries to a prospective Codex service with independently selected pricing
-and settlement; its terms and implementation remain proposed.
+and settlement. The current implementation is a narrower text-worker binding;
+the [two-live-agent demo](LIVE_DEMO_PROPOSAL.md) is the next proposed application,
+not a scripted replacement for that workflow.
 
 ## 1. Make the benefit concrete
 

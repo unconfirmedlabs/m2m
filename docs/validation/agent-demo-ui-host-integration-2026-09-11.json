@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "checked_date": "2026-09-11",
+  "scope": "root shared-validator installation and local browser/HTTP integration",
+  "live_inference": false,
+  "payments_executed": false,
+  "deployed": false,
+  "sources": {
+    "ui/agent-demo/src/api.ts": "f0138d3d9ca15c177db2959abff3f40fa71a7b8553e5618c8d32ca882be1592a",
+    "ui/agent-demo/src/reducer.ts": "00f547486ffb6573b008740880217a61b6efd992d3a4f95ba4e15145c2070de8",
+    "ui/agent-demo/src/contract.ts": "535a8c9435549c43b0fb23c0a16ed45cd46e142f2cfe9e3d1c65e5c10a8a76aa",
+    "scripts/agent-demo-event-contract.ts": "8c3cae326f417b0114297bc4acf664acdc5fbaab2ec7f1e1d97921fda631c236",
+    "scripts/test-agent-demo-ui-http.ts": "4242be774ccfbdb7df8b4e047c6527b5f1b200dfb0e09471dbf9e7ab5407ef21"
+  },
+  "changes": [
+    "UI session/status/control/SSE uses accepted shared validators and duplicate-key-rejecting parser",
+    "Validated initial session pins retained across status/event/control replies, cleared on logout/reauthentication",
+    "Reducer validates snapshots and source events before transcript/cursor changes",
+    "Tests migrated from incomplete permissive records to coherent explicitly labeled signed public fixture",
+    "Public fixture loads its JSON input portably in Node and Vitest; production import graph excludes it"
+  ],
+  "checks": [
+    { "command": "npm --prefix ui/agent-demo test", "result": "passed", "tests": 23 },
+    { "command": "npm --prefix ui/agent-demo run build", "result": "passed" },
+    { "command": "npm run agent-demo-ui-contract-tests", "result": "passed", "checks": 13 },
+    { "command": "npm run agent-demo-production-boundary-tests", "result": "passed", "actual_chromium_failure_cases": 6, "compiled_fixture_imports": 0 },
+    { "command": "npm run agent-demo-layout-browser-tests", "result": "passed", "viewports": [1440, 390], "visible_fixture_banner": true },
+    { "command": "npx tsx scripts/test-agent-demo-ui-http.ts", "result": "passed", "real_http_and_api_reducer": true, "runtime": "explicit fixture handle", "replayed_events": 19, "accepted_controls": 1 },
+    { "command": "npm run agent-demo-public-fixture-tests", "result": "passed" }
+  ],
+  "limits": [
+    "Actual hosted runtime/model not used by fixture HTTP test",
+    "L2 code was being corrected, so this is not acceptance of all H01–H06 cases",
+    "Independent UI integration rereview still pending",
+    "No investor URL or live payment evidence"
+  ]
+}

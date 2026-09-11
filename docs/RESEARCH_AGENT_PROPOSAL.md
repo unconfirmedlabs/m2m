@@ -6,6 +6,12 @@ user's local coordinator / remote Codex research-agent example. This is not an
 implemented profile, frozen wire contract, or deployment plan. The
 [foundation plan](FOUNDATION_PLAN.md) supplies the prerequisite contracts.
 
+Later implementation update, 2026-09-11: [native core and streaming validation](NATIVE_VALIDATION.md)
+now includes a live, byte-metered Codex text worker with a programmed coordinator.
+That narrower implementation does not establish all behavior proposed here.
+The user's subsequent [live investor-demo requirements](LIVE_DEMO_PROPOSAL.md)
+require two real LLM decision loops, not a scripted coordinator.
+
 ## Recommendation
 
 Use this workflow to test whether m2m's foundation composes: two named Agents,

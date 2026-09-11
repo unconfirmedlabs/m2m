@@ -1,0 +1,38 @@
+{
+  "checked_date": "2026-09-11",
+  "mode": "real-iroh-sui-localnet-explicit-fixture-inference",
+  "conversation": "b96d9193e5634a3fc66a075f5e3735771e6bb76c7c246ce61ad6536611a92c87",
+  "fixture_inference": true,
+  "live_web_research": false,
+  "restart_before_settlement": true,
+  "closed_restart_no_new_deposit": true,
+  "explicit_replacement": true,
+  "channels": [
+    {
+      "channel": "0xea14f93d8015ac615f7aa93a20b054438247e50d6a3fd44e037ec07433b94eff",
+      "requests": 2,
+      "deposit_mist": "12000",
+      "paid_mist": "850",
+      "refund_mist": "11150",
+      "transaction": "8Lm2GTb6VKqmzT9TKJoyX5noVKLAQzpPFW7xC8zUSC8Y"
+    },
+    {
+      "channel": "0x5d3039db6cf31a6013d9143ed59e35b110a7c171440456bbb42d9486f669c137",
+      "requests": 2,
+      "deposit_mist": "12000",
+      "paid_mist": "850",
+      "refund_mist": "11150",
+      "transaction": "5A1PMAEu7Z9cBXjT9SDHj3wnn9caH6G9YChMsB8SJKHw"
+    }
+  ],
+  "separate_offline_crash_checks": [
+    { "fault": "credit", "paid_mist": "0", "executions": 0 },
+    { "fault": "delivery", "paid_mist": "92", "executions": 1 },
+    { "fault": "completion", "paid_mist": "366", "executions": 1 }
+  ],
+  "limitations": [
+    "Payment, Iroh and Sui operations are real; inference in this run is a deterministic test fixture.",
+    "Mid-operation credit/delivery/completion faults were exercised in the separate in-process fixture, not by killing Fly Machines.",
+    "No public-testnet, Fly or UI deployment is established by this report."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "feature": "service.research.conversation.v2",
+  "generated_by": "scripts/agent-conversation-examples.ts",
+  "validation": [
+    "strictJson duplicate-key parser",
+    "real StreamingEngine signatures",
+    "real ResearchConversationService",
+    "python jsonschema Draft 2020-12"
+  ],
+  "notes": "Offline deterministic fixture; no Iroh, Sui network, or model backend is claimed."
+}

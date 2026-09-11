@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "checked_date": "2026-09-11",
+  "scope": "L01/L02 local startup and deferred-component recovery; independent review pending",
+  "sources": {
+    "scripts/agent-demo-components.ts": "1ce11efcfb4e236678978d3bb679aedc7f78294a4df2cd639a55e5acff6993d7",
+    "scripts/agent-demo-runtime.ts": "06afd477eb37e5abb7548863a0ec82518067ea4cae971a73d196501d7cf24079",
+    "scripts/test-agent-demo-components.ts": "899cd8ed92fb64501339e157d75b526a8be968e9aefee5f3e359a83509fa7fda",
+    "scripts/test-agent-demo-boot-contract.ts": "cb60c66f9b918f922486103f51b19cd561ea7d9728eed2255a72413b1bac4c8f",
+    "scripts/test-agent-demo-runtime.ts": "37b65c3108e7a9b2c72e79081bfbcda9bb6e37d0c2668158a5adb54895914efd",
+    "tests/agent-demo/fixture-worker-state.ts": "d13f0280d5c1e3ff952033192ff4a169e3b8d52caed97a009c1129a619f9befe"
+  },
+  "checks": [
+    {
+      "command": "npm run agent-demo-boot-tests",
+      "exit_code": 0,
+      "evidence": "component interruption boundaries; eight real-local-Iroh boot/loss cases; bounded runtime suite"
+    },
+    {
+      "command": "npx tsx scripts/test-agent-demo-components.ts",
+      "exit_code": 0,
+      "evidence": "rerun after adding credential-preflight retry and partial-result rejection"
+    },
+    {
+      "command": "npm run agent-services-tests",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "node deploy/agent-demo/build.mjs",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "observations": {
+    "first_connection_after_init_restart": "completed",
+    "transport": "actual release native-bridge, loopback, relay disabled, separate role roots",
+    "chain": "explicit injected fixture; no Sui transaction",
+    "worker": "explicit injected durable fixture; no inference",
+    "prefunding_restart_funding_callbacks": 1,
+    "funded_restart": "both retained roles explicitly restarted; same channel/budget/client; no second funding callback",
+    "lost_components_rejected_before_worker_connect_funding": [
+      "budget",
+      "coordinator",
+      "worker journal",
+      "worker marker",
+      "registry",
+      "exchange",
+      "stream",
+      "client"
+    ],
+    "constructor_boundary": "complete pending result reopens original BudgetLedger reservation; missing pending or ready result fails closed",
+    "early_worker_preflight": "known credential/gate rejection retries only with no worker artifacts"
+  },
+  "limits": [
+    "No independent review, live inference, search, Sui provisioning/settlement or Fly deployment in this tranche.",
+    "An exploratory five-second wait for automatic provider relisten after abrupt coordinator bridge termination expired. The passing funded-restart test explicitly restarts both roles; it does not prove automatic QUIC peer-loss recovery.",
+    "Crash-boundary tests inject constructor failure / interrupted marker state, not power loss.",
+    "Old experimental demo state without components.json is rejected; migration is not implemented.",
+    "L03-L05, complete init/export and live adapter/deployment validation remain outstanding."
+  ]
+}

@@ -1,0 +1,794 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://m2m.unconfirmedlabs.com/schemas/native-streaming-v1.schema.json",
+  "title": "Experimental native streaming v1 decoded command, response, and economic statement",
+  "description": "Validate signed outer envelopes separately with native-core-v1.schema.json. Decode envelope payload and extension content or receipt result as strict UTF-8 JSON. Runtime checks signatures, exact BCS, UTF-8 byte limits, policy dimensions/prices, deadlines, references, and state transitions.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Command"
+    },
+    {
+      "$ref": "#/$defs/Response"
+    },
+    {
+      "$ref": "#/$defs/Policy"
+    },
+    {
+      "$ref": "#/$defs/SignedOffer"
+    },
+    {
+      "$ref": "#/$defs/SignedCredit"
+    },
+    {
+      "$ref": "#/$defs/SignedAck"
+    },
+    {
+      "$ref": "#/$defs/SignedCheckpoint"
+    }
+  ],
+  "$defs": {
+    "Byte": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "Bytes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Byte"
+      },
+      "maxItems": 65536
+    },
+    "Bytes32": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Byte"
+      },
+      "minItems": 32,
+      "maxItems": 32
+    },
+    "Signature": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Byte"
+      },
+      "minItems": 64,
+      "maxItems": 64
+    },
+    "Address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$"
+    },
+    "U64": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]{0,18}|18446744073709551615|1[0-7][0-9]{18}|18[0-3][0-9]{17}|184[0-3][0-9]{16}|1844[0-5][0-9]{15}|18446[0-6][0-9]{14}|184467[0-3][0-9]{13}|1844674[0-3][0-9]{12}|184467440[0-6][0-9]{10}|1844674407[0-2][0-9]{9}|18446744073[0-6][0-9]{8}|1844674407370[0-8][0-9]{6}|18446744073709[0-4][0-9]{5}|184467440737095[0-4][0-9]{4}|18446744073709550[0-9]{3}|18446744073709551[0-5][0-9]{2}|1844674407370955160[0-9]{1}|1844674407370955161[0-4])$"
+    },
+    "Counters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/U64"
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "Network": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Byte"
+      },
+      "minItems": 1,
+      "maxItems": 64
+    },
+    "Unit": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 97,
+            "maximum": 122
+          },
+          {
+            "type": "integer",
+            "minimum": 48,
+            "maximum": 57
+          },
+          {
+            "enum": [46,95,47,45]
+          }
+        ]
+      }
+    },
+    "Policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose","version","units","rates","denominator"],
+      "properties": {
+        "purpose": {
+          "const": [109,50,109,47,115,116,114,101,97,109,105,110,103,47,112,111,108,105,99,121,47,118,49]
+        },
+        "version": {
+          "const": 1
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Unit"
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "rates": {
+          "$ref": "#/$defs/Counters"
+        },
+        "denominator": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/U64"
+            },
+            {
+              "not": {
+                "const": "0"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Offer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose","method","version","network","package_id","deployment","buyer","provider","buyer_key","provider_key","refund","payee","opening_nonce","policy_hash","deposit","offer_expires_ms","work_deadline_ms","claim_deadline_ms"],
+      "properties": {
+        "purpose": {
+          "const": [109,50,109,47,115,116,114,101,97,109,105,110,103,47,111,102,102,101,114,47,118,49]
+        },
+        "method": {
+          "const": [115,117,105,46,115,116,114,101,97,109,105,110,103,46,118,49]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "$ref": "#/$defs/Network"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/Address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/Address"
+        },
+        "provider": {
+          "$ref": "#/$defs/Address"
+        },
+        "buyer_key": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "provider_key": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "refund": {
+          "$ref": "#/$defs/Address"
+        },
+        "payee": {
+          "$ref": "#/$defs/Address"
+        },
+        "opening_nonce": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "policy_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "deposit": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/U64"
+            },
+            {
+              "not": {
+                "const": "0"
+              }
+            }
+          ]
+        },
+        "offer_expires_ms": {
+          "$ref": "#/$defs/U64"
+        },
+        "work_deadline_ms": {
+          "$ref": "#/$defs/U64"
+        },
+        "claim_deadline_ms": {
+          "$ref": "#/$defs/U64"
+        }
+      }
+    },
+    "Credit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose","method","version","network","package_id","deployment","buyer","provider","channel","offer_hash","sequence","request_sequence","request_hash","previous_checkpoint","units","cumulative_amount"],
+      "properties": {
+        "purpose": {
+          "const": [109,50,109,47,115,116,114,101,97,109,105,110,103,47,99,114,101,100,105,116,47,118,49]
+        },
+        "method": {
+          "const": [115,117,105,46,115,116,114,101,97,109,105,110,103,46,118,49]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "$ref": "#/$defs/Network"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/Address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/Address"
+        },
+        "provider": {
+          "$ref": "#/$defs/Address"
+        },
+        "channel": {
+          "$ref": "#/$defs/Address"
+        },
+        "offer_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "sequence": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/U64"
+            },
+            {
+              "not": {
+                "const": "0"
+              }
+            }
+          ]
+        },
+        "request_sequence": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/U64"
+            },
+            {
+              "not": {
+                "const": "0"
+              }
+            }
+          ]
+        },
+        "request_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "previous_checkpoint": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "units": {
+          "$ref": "#/$defs/Counters"
+        },
+        "cumulative_amount": {
+          "$ref": "#/$defs/U64"
+        }
+      }
+    },
+    "Ack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose","method","version","network","package_id","deployment","buyer","provider","channel","offer_hash","credit_hash","sequence"],
+      "properties": {
+        "purpose": {
+          "const": [109,50,109,47,115,116,114,101,97,109,105,110,103,47,97,99,107,47,118,49]
+        },
+        "method": {
+          "const": [115,117,105,46,115,116,114,101,97,109,105,110,103,46,118,49]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "$ref": "#/$defs/Network"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/Address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/Address"
+        },
+        "provider": {
+          "$ref": "#/$defs/Address"
+        },
+        "channel": {
+          "$ref": "#/$defs/Address"
+        },
+        "offer_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "credit_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "sequence": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/U64"
+            },
+            {
+              "not": {
+                "const": "0"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose","method","version","network","package_id","deployment","buyer","provider","channel","offer_hash","credit_hash","sequence","request_sequence","request_hash","previous_checkpoint","units","cumulative_amount","output_hash","final"],
+      "properties": {
+        "purpose": {
+          "const": [109,50,109,47,115,116,114,101,97,109,105,110,103,47,99,104,101,99,107,112,111,105,110,116,47,118,49]
+        },
+        "method": {
+          "const": [115,117,105,46,115,116,114,101,97,109,105,110,103,46,118,49]
+        },
+        "version": {
+          "const": 1
+        },
+        "network": {
+          "$ref": "#/$defs/Network"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Address"
+        },
+        "deployment": {
+          "$ref": "#/$defs/Address"
+        },
+        "buyer": {
+          "$ref": "#/$defs/Address"
+        },
+        "provider": {
+          "$ref": "#/$defs/Address"
+        },
+        "channel": {
+          "$ref": "#/$defs/Address"
+        },
+        "offer_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "credit_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "sequence": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/U64"
+            },
+            {
+              "not": {
+                "const": "0"
+              }
+            }
+          ]
+        },
+        "request_sequence": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/U64"
+            },
+            {
+              "not": {
+                "const": "0"
+              }
+            }
+          ]
+        },
+        "request_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "previous_checkpoint": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "units": {
+          "$ref": "#/$defs/Counters"
+        },
+        "cumulative_amount": {
+          "$ref": "#/$defs/U64"
+        },
+        "output_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "final": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SignedOffer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["payload","signature"],
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Offer"
+        },
+        "signature": {
+          "$ref": "#/$defs/Signature"
+        }
+      }
+    },
+    "SignedCredit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["payload","signature"],
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Credit"
+        },
+        "signature": {
+          "$ref": "#/$defs/Signature"
+        }
+      }
+    },
+    "SignedAck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["payload","signature"],
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Ack"
+        },
+        "signature": {
+          "$ref": "#/$defs/Signature"
+        }
+      }
+    },
+    "SignedCheckpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["payload","signature"],
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Checkpoint"
+        },
+        "signature": {
+          "$ref": "#/$defs/Signature"
+        }
+      }
+    },
+    "ResearchRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version","conversation","request","sequence","prompt"],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "conversation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "request": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sequence": {
+          "const": "1"
+        },
+        "prompt": {
+          "type": "string",
+          "maxLength": 16384
+        }
+      }
+    },
+    "TokenUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["totalTokens","inputTokens","cachedInputTokens","cacheWriteInputTokens","outputTokens","reasoningOutputTokens"],
+      "properties": {
+        "totalTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "inputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cachedInputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cacheWriteInputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "outputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "reasoningOutputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "OfferCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op","nonce"],
+      "properties": {
+        "op": {
+          "const": "offer"
+        },
+        "nonce": {
+          "$ref": "#/$defs/Bytes32"
+        }
+      }
+    },
+    "FundedCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op","channel"],
+      "properties": {
+        "op": {
+          "const": "funded"
+        },
+        "channel": {
+          "$ref": "#/$defs/Address"
+        }
+      }
+    },
+    "CreditCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op","request","credit"],
+      "properties": {
+        "op": {
+          "const": "credit"
+        },
+        "request": {
+          "$ref": "#/$defs/ResearchRequest"
+        },
+        "credit": {
+          "$ref": "#/$defs/SignedCredit"
+        }
+      }
+    },
+    "StartCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op","request_hash"],
+      "properties": {
+        "op": {
+          "const": "start"
+        },
+        "request_hash": {
+          "$ref": "#/$defs/Bytes32"
+        }
+      }
+    },
+    "PollCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op","request_hash","after_output"],
+      "properties": {
+        "op": {
+          "const": "poll"
+        },
+        "request_hash": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "after_output": {
+          "$ref": "#/$defs/U64"
+        }
+      }
+    },
+    "CancelCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op","request_hash"],
+      "properties": {
+        "op": {
+          "const": "cancel"
+        },
+        "request_hash": {
+          "$ref": "#/$defs/Bytes32"
+        }
+      }
+    },
+    "Command": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OfferCommand"
+        },
+        {
+          "$ref": "#/$defs/FundedCommand"
+        },
+        {
+          "$ref": "#/$defs/CreditCommand"
+        },
+        {
+          "$ref": "#/$defs/StartCommand"
+        },
+        {
+          "$ref": "#/$defs/PollCommand"
+        },
+        {
+          "$ref": "#/$defs/CancelCommand"
+        }
+      ]
+    },
+    "OfferResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type","offer","policy"],
+      "properties": {
+        "type": {
+          "const": "offer"
+        },
+        "offer": {
+          "$ref": "#/$defs/SignedOffer"
+        },
+        "policy": {
+          "$ref": "#/$defs/Policy"
+        }
+      }
+    },
+    "FundedResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type","channel"],
+      "properties": {
+        "type": {
+          "const": "funded"
+        },
+        "channel": {
+          "$ref": "#/$defs/Address"
+        }
+      }
+    },
+    "AckResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type","ack"],
+      "properties": {
+        "type": {
+          "const": "ack"
+        },
+        "ack": {
+          "$ref": "#/$defs/SignedAck"
+        }
+      }
+    },
+    "StartedResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "const": "started"
+        }
+      }
+    },
+    "DeliveryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type","checkpoint","output"],
+      "properties": {
+        "type": {
+          "const": "delivery"
+        },
+        "checkpoint": {
+          "$ref": "#/$defs/SignedCheckpoint"
+        },
+        "output": {
+          "$ref": "#/$defs/Bytes"
+        },
+        "upstream_usage": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/TokenUsage"
+            }
+          ]
+        },
+        "worker_state": {
+          "enum": ["prepared","launching","running","completed","failed","cancelled","uncertain"]
+        }
+      }
+    },
+    "WaitingResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type","reason"],
+      "properties": {
+        "type": {
+          "const": "waiting"
+        },
+        "reason": {
+          "enum": ["prepared","launching","running","completed","failed","cancelled","uncertain","credit_exhausted"]
+        },
+        "upstream_usage": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/TokenUsage"
+            }
+          ]
+        }
+      }
+    },
+    "CancellationResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type","confirmed"],
+      "properties": {
+        "type": {
+          "const": "cancellation_requested"
+        },
+        "confirmed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Response": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OfferResponse"
+        },
+        {
+          "$ref": "#/$defs/FundedResponse"
+        },
+        {
+          "$ref": "#/$defs/AckResponse"
+        },
+        {
+          "$ref": "#/$defs/StartedResponse"
+        },
+        {
+          "$ref": "#/$defs/DeliveryResponse"
+        },
+        {
+          "$ref": "#/$defs/WaitingResponse"
+        },
+        {
+          "$ref": "#/$defs/CancellationResponse"
+        }
+      ]
+    },
+    "ExtensionBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session","content"],
+      "properties": {
+        "session": {
+          "$ref": "#/$defs/Bytes32"
+        },
+        "content": {
+          "$ref": "#/$defs/Bytes"
+        }
+      }
+    }
+  }
+}

@@ -5,12 +5,19 @@ Status: architectural assessment and recommended work sequence. This document
 does not freeze a new wire format, authorize a deployment, or implement a core.
 Sui, Iroh, and the native foundational-standard direction remain requirements.
 
+Implementation update, 2026-09-11: the assessment below records its original code
+baseline. Issue #1 subsequently implemented an experimental native core and
+generic streaming binding; see [validation and remaining gaps](NATIVE_VALIDATION.md).
+The historical gap statements below are not a current implementation inventory.
+
 The later [identity and naming recommendation](IDENTITY_AND_NAMING.md) explores
 separate communication/economic keys and SuiNS aliases resolving to Agent objects.
 It supplies design inputs and upstream evidence for the identity work below;
 economic/transport key separation was subsequently accepted on 2026-09-11, while
 the detailed lifecycle and naming policies remain proposed. There is not yet a
-frozen core or payment binding for these changes.
+frozen core or payment binding at that assessment baseline; the experimental
+implementation contracts are now [core v1](NATIVE_CORE_SPEC.md) and
+[streaming v1](STREAMING_V1_SPEC.md).
 
 The [named research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) provides a concrete
 next use case to test these boundaries. Its service, pricing, and payment choices

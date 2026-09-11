@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "notice": "TEST FIXTURE — no live agents or payments",
+  "prices": [
+    { "name": "research-byte-price", "rates": ["2", "3"], "denominator": "1", "units": ["29", "11"], "expected_mist": "91" },
+    { "name": "one-cumulative-rounding", "rates": ["1", "2"], "denominator": "8", "units": ["3", "2"], "expected_mist": "1" },
+    { "name": "beyond-ieee-safe-integer", "rates": ["1", "1"], "denominator": "1", "units": ["9007199254740993", "1"], "expected_mist": "9007199254740994" },
+    { "name": "u64-maximum", "rates": ["1", "0"], "denominator": "1", "units": ["18446744073709551615", "0"], "expected_mist": "18446744073709551615" }
+  ],
+  "accounting": [
+    {
+      "name": "advance-redemption-is-not-delivery",
+      "deposit_mist": "20",
+      "signed_cumulative_observations": ["4", "8", "8"],
+      "reserved_mist": "12",
+      "delivered_mist": "5",
+      "redeemed_mist": "7",
+      "locked_mist": "13",
+      "status": "open",
+      "terminal_confirmed": false,
+      "expected": { "signed_authorized_mist": "8", "outstanding_mist": "3", "reserved_exposure_mist": "7", "refunded_mist": null, "redeemed_above_delivery": true }
+    },
+    {
+      "name": "unknown-chain-is-not-zero",
+      "deposit_mist": "20",
+      "signed_cumulative_observations": [],
+      "reserved_mist": "0",
+      "delivered_mist": "0",
+      "redeemed_mist": null,
+      "locked_mist": null,
+      "status": "unknown",
+      "terminal_confirmed": false,
+      "expected": { "signed_authorized_mist": "0", "outstanding_mist": "0", "reserved_exposure_mist": "0", "refunded_mist": null, "redeemed_above_delivery": null }
+    },
+    {
+      "name": "exact-close-refund-excludes-gas",
+      "deposit_mist": "12000",
+      "signed_cumulative_observations": ["300", "900"],
+      "reserved_mist": "900",
+      "delivered_mist": "850",
+      "redeemed_mist": "850",
+      "locked_mist": "0",
+      "status": "closed",
+      "terminal_confirmed": true,
+      "gas": { "computation_cost": "1000", "storage_cost": "2000", "storage_rebate": "1500", "non_refundable_storage_fee": "15" },
+      "expected": { "signed_authorized_mist": "900", "outstanding_mist": "0", "reserved_exposure_mist": "0", "refunded_mist": "11150", "redeemed_above_delivery": false }
+    },
+    {
+      "name": "pending-close-retains-exposure",
+      "deposit_mist": "12000",
+      "signed_cumulative_observations": ["300", "900"],
+      "reserved_mist": "900",
+      "delivered_mist": "850",
+      "redeemed_mist": "850",
+      "locked_mist": "0",
+      "status": "closed",
+      "terminal_confirmed": false,
+      "expected": { "signed_authorized_mist": "900", "outstanding_mist": "50", "reserved_exposure_mist": "50", "refunded_mist": null, "redeemed_above_delivery": false }
+    },
+    {
+      "name": "unconfirmed-terminal-is-not-refunded",
+      "deposit_mist": "12000",
+      "signed_cumulative_observations": [],
+      "reserved_mist": "0",
+      "delivered_mist": "0",
+      "redeemed_mist": "0",
+      "locked_mist": "0",
+      "status": "refunded",
+      "terminal_confirmed": false,
+      "expected": { "signed_authorized_mist": "0", "outstanding_mist": "0", "reserved_exposure_mist": "0", "refunded_mist": null, "redeemed_above_delivery": false }
+    },
+    {
+      "name": "no-credit-expiry-refund",
+      "deposit_mist": "12000",
+      "signed_cumulative_observations": [],
+      "reserved_mist": "0",
+      "delivered_mist": "0",
+      "redeemed_mist": "0",
+      "locked_mist": "0",
+      "status": "refunded",
+      "terminal_confirmed": true,
+      "expected": { "signed_authorized_mist": "0", "outstanding_mist": "0", "reserved_exposure_mist": "0", "refunded_mist": "12000", "redeemed_above_delivery": false }
+    }
+  ],
+  "utf8_delivery": {
+    "frames": [
+      { "sequence": "1", "output": [72, 105, 32, 240] },
+      { "sequence": "2", "output": [159] },
+      { "sequence": "2", "output": [159] },
+      { "sequence": "3", "output": [140, 141, 33] }
+    ],
+    "expected_text": "Hi 🌍!",
+    "expected_output_bytes": "8"
+  },
+  "source_identity": {
+    "records": [
+      { "source": "coordinator", "role": "host", "id": "1", "value": "first" },
+      { "source": "provider", "role": "host", "id": "1", "value": "second" },
+      { "source": "coordinator", "role": "host", "id": "1", "value": "first" }
+    ],
+    "expected_unique_records": 2
+  }
+}

@@ -1,7 +1,8 @@
 # m2m message examples
 
-This directory contains **23 exact JSON examples covering all 19 currently declared
-message shapes**: 12 channel messages and 7 escrow request/response shapes. Four
+This directory contains separate native and legacy wire corpora. The legacy
+corpus below has **23 exact JSON examples covering its 19 declared message
+shapes**: 12 channel messages and 7 escrow request/response shapes. Four
 additional examples show channel recovery states. These are offline wire fixtures,
 not a live exchange or a script to send to a funded peer.
 
@@ -11,9 +12,17 @@ coherent exchange. Object IDs, network, timestamps, and transaction digests are
 synthetic. The fixed test keys are public; never fund them. No private operational
 state is used to generate these files.
 
-The [draft core proposal](../../docs/CORE_MESSAGE_PROPOSAL.md) explores general
-messaging for the foundational standard. Those proposed messages are separate
-from this corpus and are not accepted by today's runtime.
+The implemented experimental [native core corpus](native-core/README.md) covers
+ten envelope kinds, including unpaid messaging and service descriptions. The
+[native streaming corpus](native-streaming/README.md) adds 32 signed envelopes
+with economic statements, credit exhaustion/renewal, cancellation and rejection
+branches. Their specifications and runtime status are linked in each corpus.
+The separate [research conversation v2 corpus](research-conversation-v2/README.json)
+tracks the new [agent-services binding](../../docs/AGENT_SERVICES_SPEC.md).
+It does not replace the original research or economic wire formats.
+They do not change the legacy formats below. The earlier
+[core proposal](../../docs/CORE_MESSAGE_PROPOSAL.md) remains a design sketch, not
+the implemented wire contract.
 
 ## Channel messages
 
