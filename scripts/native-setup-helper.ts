@@ -356,7 +356,9 @@ export async function provisionNativeDemo(options: NativeSetupOptions): Promise<
   const beginEffect = async (key: keyof SetupManifest['operations']): Promise<void> => {
     const journal = effectJournal(key); const pending = manifest.in_flight?.[key];
     if (pending && (pending.journal !== journal || pending.operation !== manifest.operations[key])) throw new Error('Invalid initialized setup manifest');
-    if ((pending || manifest.transactions[effectTransaction(key)]) && (!ports.hasJournal || !await ports.hasJournal(journal))) throw new Error(`Recovery required for ${key}; exact submitted journal is missing`);
+    const submitted = ports.hasJournal ? await ports.hasJournal(journal) : false;
+    if ((pending || manifest.transactions[effectTransaction(key)]) && (!ports.hasJournal || !submitted)) throw new Error(`Recovery required for ${key}; exact submitted journal is missing`);
+    if (submitted && !pending && !manifest.transactions[effectTransaction(key)]) throw new Error(`Recovery required for ${key}; exact submitted journal is missing`);
     manifest.in_flight = { ...(manifest.in_flight ?? {}), [key]: { journal, operation: manifest.operations[key] } };
     await persistManifest();
   };

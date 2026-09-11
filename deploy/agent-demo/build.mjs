@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const allowed = /^scripts\/(?:agent-[a-z-]+|responses-[a-z-]+|native-[a-z-]+|streaming-[a-z-]+|codex-worker|research-conversation|demo-types|chain|codec)\.ts$/;
+const allowed = /^scripts\/(?:agent-[a-z-]+|reduced-demo-[a-z-]+|responses-[a-z-]+|native-[a-z-]+|streaming-[a-z-]+|codex-worker|research-conversation|demo-types|chain|codec)\.ts$/;
 const forbidden = /(?:^|\/)(?:test[^/]*|fixtures?|examples?|node_modules|\.m2m)(?:\/|\.)|(?:-examples|-setup(?:-helper)?)\.ts$/;
 
 try {
@@ -22,12 +22,14 @@ try {
       inputs.some(path => !allowed.test(path) || forbidden.test(path))) throw Error('invalid_graph');
   // Preserve import.meta.url for every module. Bundling the CLI main guards
   // together would incorrectly execute imported native/legacy CLI entrypoints.
+  const operatorInputs = ['scripts/reduced-demo-init.ts', 'scripts/reduced-live-demo.ts'];
+  const compileInputs = [...new Set([...inputs, ...operatorInputs])];
   const compiled = await build({
-    absWorkingDir: root, entryPoints: inputs, outbase: 'scripts',
+    absWorkingDir: root, entryPoints: compileInputs, outbase: 'scripts',
     outdir: 'dist/agent-demo/scripts', platform: 'node', target: 'node22',
     format: 'esm', bundle: false, sourcemap: false, write: false, logLevel: 'silent',
   });
-  const expected = new Set(inputs.map(path => resolve(root, 'dist/agent-demo', path.replace(/\.ts$/, '.js'))));
+  const expected = new Set(compileInputs.map(path => resolve(root, 'dist/agent-demo', path.replace(/\.ts$/, '.js'))));
   if (compiled.outputFiles.length !== expected.size || compiled.outputFiles.some(file => !expected.has(file.path))) throw Error('invalid_output');
   await mkdir(resolve(root, 'dist/agent-demo/scripts'), { recursive: true });
   for (const output of compiled.outputFiles) await writeFile(output.path, output.contents);

@@ -65,6 +65,7 @@ interface ProbeSummary {
 interface CreateObservation {
   inputKind: 'user' | 'function_call_output' | 'other';
   previousResponseId?: string;
+  functionCallId?: string;
 }
 
 interface Evidence {
@@ -213,6 +214,7 @@ class ProbeTransport implements ResponsesTransport {
   chargedResponseBytes = 0;
   previousResponseIdPresent = false;
   prohibitedToolsSubmitted = 0;
+  private readonly callToResponse = new Map<string, string>();
 
   constructor(private readonly inner: OpenAIResponsesTransport) {}
 
@@ -233,13 +235,30 @@ class ProbeTransport implements ResponsesTransport {
     const input = Array.isArray(body.input) ? body.input[0] : undefined;
     const inputKind = input && typeof input === 'object' && !Array.isArray(input) && (input as Record<string, unknown>).type === 'function_call_output' ? 'function_call_output' : input && typeof input === 'object' && !Array.isArray(input) && (input as Record<string, unknown>).role === 'user' ? 'user' : 'other';
     const previous = typeof body.previous_response_id === 'string' && body.previous_response_id.length > 0 ? body.previous_response_id : undefined;
-    this.createObservations.push({ inputKind, ...(previous ? { previousResponseId: previous } : {}) });
+    const functionCallId = input && typeof input === 'object' && !Array.isArray(input) && typeof (input as Record<string, unknown>).call_id === 'string' ? (input as Record<string, unknown>).call_id as string : undefined;
+    this.createObservations.push({ inputKind, ...(previous ? { previousResponseId: previous } : {}), ...(functionCallId ? { functionCallId } : {}) });
   }
 
   async create(body: ResponsesCreateBody, options: ResponsesHttpOptions & { clientRequestId: string }): Promise<AsyncIterable<ResponsesEvent>> {
     this.inspect(body); this.observe(body); this.creates++;
-    return this.inner.create(body, { ...this.charged(options), clientRequestId: options.clientRequestId });
+    const source = await this.inner.create(body, { ...this.charged(options), clientRequestId: options.clientRequestId });
+    const calls = this.callToResponse;
+    return (async function*(): AsyncIterable<ResponsesEvent> {
+      for await (const event of source) {
+        const response = event.response;
+        if (response && typeof response === 'object' && !Array.isArray(response)) {
+          const responseRecord = response as Record<string, unknown>;
+          const responseId = typeof responseRecord.id === 'string' ? responseRecord.id : undefined;
+          const output = responseRecord.output;
+          if (responseId && Array.isArray(output)) for (const item of output) {
+            if (item && typeof item === 'object' && !Array.isArray(item) && (item as Record<string, unknown>).type === 'function_call' && typeof (item as Record<string, unknown>).call_id === 'string') calls.set((item as Record<string, unknown>).call_id as string, responseId);
+          }
+        }
+        yield event;
+      }
+    })();
   }
+  expectedPredecessor(callId: string | undefined): string | undefined { return callId ? this.callToResponse.get(callId) : undefined; }
   async retrieve(id: string, options: ResponsesHttpOptions): Promise<ResponsesSnapshot> { this.retrieves++; return this.inner.retrieve(id, this.charged(options)); }
   async resume(id: string, after: number, options: ResponsesHttpOptions): Promise<AsyncIterable<ResponsesEvent>> { this.resumes++; return this.inner.resume(id, after, this.charged(options)); }
   async cancel(id: string, options: ResponsesHttpOptions): Promise<ResponsesSnapshot> { this.cancels++; return this.inner.cancel(id, this.charged(options)); }
@@ -361,7 +380,7 @@ async function restartPhase(stateDir: string, apiKey: string, marker: string): P
   const followupCreates = transport.creates;
   const firstFollowupCreate = transport.createObservations[0];
   const continuationCreate = transport.createObservations[1];
-  fixed(replayCreates === 0 && followupCreates >= 2 && firstFollowupCreate?.inputKind === 'user' && firstFollowupCreate.previousResponseId === retainedResponseId && continuationCreate?.inputKind === 'function_call_output' && continuationCreate.previousResponseId === followup.knownTurnIds.at(-1), 'live_probe_predecessor_missing');
+  fixed(replayCreates === 0 && followupCreates >= 2 && firstFollowupCreate?.inputKind === 'user' && firstFollowupCreate.previousResponseId === retainedResponseId && continuationCreate?.inputKind === 'function_call_output' && continuationCreate.previousResponseId === transport.expectedPredecessor(continuationCreate.functionCallId), 'live_probe_predecessor_missing');
   fixed(callbacks.calls >= 1 && callbacks.markers.length >= 1, 'live_probe_followup_callback_missing');
   assertSentinelAttempts(callbacks, 'live_probe_followup_sentinel_attempts_missing');
   const followupMarker = callbacks.markers[callbacks.markers.length - 1];
@@ -392,7 +411,7 @@ async function continuePhase(stateDir: string, apiKey: string): Promise<void> {
   fixed(result.state === 'completed', 'live_probe_continue_not_completed');
   const firstContinueCreate = transport.createObservations[0];
   const continueContinuation = transport.createObservations[1];
-  fixed(transport.creates >= 2 && firstContinueCreate?.inputKind === 'user' && firstContinueCreate.previousResponseId === retainedResponseId && continueContinuation?.inputKind === 'function_call_output' && continueContinuation.previousResponseId === result.knownTurnIds.at(-1) && callbacks.calls >= 1, 'live_probe_continue_predecessor_missing');
+  fixed(transport.creates >= 2 && firstContinueCreate?.inputKind === 'user' && firstContinueCreate.previousResponseId === retainedResponseId && continueContinuation?.inputKind === 'function_call_output' && continueContinuation.previousResponseId === transport.expectedPredecessor(continueContinuation.functionCallId) && callbacks.calls >= 1, 'live_probe_continue_predecessor_missing');
   assertSentinelAttempts(callbacks, 'live_probe_continue_sentinel_attempts_missing');
   const marker = callbacks.markers[callbacks.markers.length - 1];
   fixed(resultText(result).includes(marker), 'live_probe_continue_output_dependency_missing');

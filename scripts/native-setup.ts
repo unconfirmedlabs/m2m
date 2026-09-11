@@ -54,7 +54,14 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
     }
 
     const priorManifest = await readOptional<SetupManifest>(`${state}/setup-manifest.json`);
+    const initializedMarker = await readOptional<{ version: number }>(`${state}/setup-initialized.json`);
+    if (initializedMarker && initializedMarker.version !== 1) throw new Error('Invalid initialized setup manifest');
+    if (priorManifest && !initializedMarker) throw new Error('Initialized setup manifest is required');
+    if (!priorManifest && initializedMarker) throw new Error('Initialized setup manifest is required');
     if (!priorManifest) {
+      // This independent marker is written before any key/effect creation. A
+      // later missing manifest therefore cannot be mistaken for a fresh setup.
+      await save(`${state}/setup-initialized.json`, { version: 1 });
       const initializedArtifacts = [
         'chain.json', 'publish.tx.json', 'domain.tx.json', 'names.tx.json',
         'local/transport.json', 'local/economic.json', 'local/iroh-key.json', 'local/identity.json', 'local/authorization.json', 'local/register.tx.json',

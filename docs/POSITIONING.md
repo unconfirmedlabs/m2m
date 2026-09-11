@@ -40,8 +40,10 @@ research fixture or postpaid acceptance scheme is not a prerequisite. Exact rate
 production pricing and the complete research product remain unvalidated. A later
 [native local implementation](NATIVE_VALIDATION.md) verifies a byte-priced live
 Codex text response, not token-level compute backpressure or source-seeking research.
-The [investor demo requirements](LIVE_DEMO_PROPOSAL.md) now call for two genuine
-LLM agents, a Tailwind interface, and real payments without scripted behavior.
+The user subsequently reduced the [active demo requirements](REDUCED_LIVE_DEMO.md)
+to a deterministic user-driven coordinator, one real Luna xhigh research agent,
+a simple UI, real Iroh/testnet incremental payments, a controlled restart and
+verified close. The earlier two-LLM scope is deferred.
 
 ## Accepted direction
 

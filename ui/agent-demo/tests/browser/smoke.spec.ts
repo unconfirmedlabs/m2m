@@ -37,7 +37,7 @@ test('authenticated dashboard replays delivery and accounting at desktop and mob
 });
 
 test('failed control POST is retried with the exact pending intent', async ({ page }) => {
-  const session = createPublicSessionFixture(); const view = session.snapshot; let postCount = 0; const ids: string[] = [];
+  const session = createPublicSessionFixture(); const view = structuredClone(session.snapshot); view.available_controls = ['task']; let postCount = 0; const ids: string[] = [];
   await page.route('**/api/v1/**', async route => {
     const request = route.request(); const url = new URL(request.url());
     if (url.pathname.endsWith('/session')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ version: 1, access: 'operator', snapshot: view }) });
@@ -51,10 +51,11 @@ test('failed control POST is retried with the exact pending intent', async ({ pa
     return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ version: 1, code: 'not_found' }) });
   });
   await page.goto('/'); await page.getByLabel('Viewer or operator token').fill('fixture-token'); await page.getByRole('button', { name: 'Open live session' }).click();
-  await expect(page.getByRole('heading', { name: 'Choose the next real operation' })).toBeVisible();
-  await page.getByRole('button', { name: 'Disconnect Iroh' }).click();
+  await expect(page.getByRole('heading', { name: 'Submit one research turn' })).toBeVisible();
+  await page.getByLabel('Research prompt (forwarded exactly)').fill('retry this exact user prompt');
+  await page.getByRole('button', { name: 'Submit turn' }).click();
   await expect(page.getByRole('alert')).toContainText('network_unavailable');
-  await page.getByRole('button', { name: 'Disconnect Iroh' }).click();
+  await page.getByRole('button', { name: 'Submit turn' }).click();
   await expect(page.getByText(/Operation/)).toBeVisible();
   expect(ids).toHaveLength(2); expect(ids[0]).toBe(ids[1]);
 });

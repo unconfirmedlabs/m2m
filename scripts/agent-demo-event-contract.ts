@@ -422,26 +422,31 @@ function economy(value: unknown, pins: DemoValidationPins): DemoEconomy {
   const outstanding = u64(r.outstanding_mist); const reservedExposure = u64(r.reserved_exposure_mist);
   const redeemed = r.redeemed_mist === null ? null : u64(r.redeemed_mist); const locked = r.locked_mist === null ? null : u64(r.locked_mist); const refunded = r.refunded_mist === null ? null : u64(r.refunded_mist); const observed = r.observed_at_ms === null ? null : u64(r.observed_at_ms);
   const opening = transaction(r.opening); const terminal = r.terminal === null ? null : transaction(r.terminal);
-  const terminalClear = (r.status === 'closed' || r.status === 'refunded') && terminal?.state === 'confirmed' && locked === '0' && redeemed !== null && observed !== null && terminal.digest !== null;
+  const terminalObserved = (r.status === 'closed' || r.status === 'refunded' || r.status === 'unknown') && terminal !== null && locked === '0' && redeemed !== null && observed !== null;
+  const terminalClear = (r.status === 'closed' || r.status === 'refunded') && terminalObserved && terminal?.state === 'confirmed' && terminal.digest !== null;
+  // A terminal chain object can be observed before its transaction digest is
+  // available to this process. Keep that settlement explicitly unknown while
+  // accepting the ledger's intentional active-channel reset.
+  const terminalReset = r.status === 'unknown' && terminalObserved;
   if (offer.payload.deposit !== pins.config.deposit_mist) bad();
-  if (terminalClear) { if (parsedBudget.channel !== null || parsedBudget.authorized_mist !== '0' || parsedBudget.delivered_mist !== '0' || parsedBudget.outstanding_mist !== '0') bad(); }
+  if (terminalClear || terminalReset) { if (parsedBudget.channel !== null || parsedBudget.authorized_mist !== '0' || parsedBudget.delivered_mist !== '0' || parsedBudget.outstanding_mist !== '0') bad(); }
   else if (parsedBudget.channel !== channel || parsedBudget.authorized_mist !== reserved || parsedBudget.delivered_mist !== delivered || BigInt(parsedBudget.outstanding_mist) !== BigInt(reserved) - BigInt(delivered)) bad();
   if (signedCredit && signedCredit.payload.channel !== channel) bad();
   if (checkpoint && checkpoint.payload.channel !== channel) bad();
   if (BigInt(delivered) !== BigInt(price(deliveredUnits, pins.config))) bad();
   if (signedCredit && signedCredit.payload.cumulative_amount !== signed) bad();
-  if (BigInt(delivered) > BigInt(signed) || (!terminalClear && BigInt(delivered) > BigInt(parsedBudget.authorized_mist)) || BigInt(signed) > BigInt(offer.payload.deposit) || BigInt(reserved) > BigInt(offer.payload.deposit) || BigInt(signed) > BigInt(reserved)) bad();
+  if (BigInt(delivered) > BigInt(signed) || (!terminalClear && !terminalReset && BigInt(delivered) > BigInt(parsedBudget.authorized_mist)) || BigInt(signed) > BigInt(offer.payload.deposit) || BigInt(reserved) > BigInt(offer.payload.deposit) || BigInt(signed) > BigInt(reserved)) bad();
   if (!signedCredit && signed !== '0') bad();
   if (BigInt(delivered) > 0n && checkpoint === null) bad();
   if (checkpoint && (checkpoint.payload.cumulative_amount !== delivered || checkpoint.payload.units[0] !== deliveredUnits[0] || checkpoint.payload.units[1] !== deliveredUnits[1])) bad();
   if (redeemed !== null && BigInt(redeemed) > BigInt(offer.payload.deposit)) bad();
   if (locked !== null && BigInt(locked) > BigInt(offer.payload.deposit)) bad();
   if (refunded !== null) {
-    if (!terminalClear || redeemed === null || BigInt(refunded) !== BigInt(offer.payload.deposit) - BigInt(redeemed)) bad();
+    if (!(terminalClear || terminalReset) || status !== 'refunded' || redeemed === null || BigInt(refunded) !== BigInt(offer.payload.deposit) - BigInt(redeemed)) bad();
   }
   const expectedOutstanding = BigInt(signed) > BigInt(delivered) ? BigInt(signed) - BigInt(delivered) : 0n;
   const expectedReserved = BigInt(reserved) > BigInt(delivered) ? BigInt(reserved) - BigInt(delivered) : 0n;
-  if (BigInt(outstanding) !== (terminalClear ? 0n : expectedOutstanding) || BigInt(reservedExposure) !== (terminalClear ? 0n : expectedReserved)) bad();
+  if (BigInt(outstanding) !== (terminalClear || terminalReset ? 0n : expectedOutstanding) || BigInt(reservedExposure) !== (terminalClear || terminalReset ? 0n : expectedReserved)) bad();
   if (status === 'open' && terminal !== null) bad();
   return { channel, status, offer, policy, signed_credit: signedCredit, checkpoint,
     budget: parsedBudget, delivered_units: deliveredUnits, delivered_mist: delivered, signed_authorized_mist: signed,

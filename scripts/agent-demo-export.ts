@@ -62,9 +62,7 @@ function validateHosts(coordinator: DemoHostConfig, provider: DemoHostConfig): v
       !same(coordinator.runtime, provider.runtime) || coordinator.provider_base_url !== provider.provider_base_url) fail('invalid_export_config');
   // Export writes only these fixed role-relative destinations, never arbitrary
   // config paths. Model/API keys are not accepted inline or from ambient env.
-  for (const host of [coordinator, provider]) {
-    if (host.model_api_key_file !== `${secretRoot}/model.key` || host.observer_token_file !== `${secretRoot}/observer.token`) fail('invalid_export_config');
-  }
+  if (provider.model_api_key_file !== `${secretRoot}/model.key` || coordinator.observer_token_file !== `${secretRoot}/observer.token` || provider.observer_token_file !== `${secretRoot}/observer.token`) fail('invalid_export_config');
   if (coordinator.wallet_file !== `${secretRoot}/controller.json` || coordinator.viewer_token_file !== `${secretRoot}/viewer.token` ||
       coordinator.operator_token_file !== `${secretRoot}/operator.token` || provider.search_api_key_file !== `${secretRoot}/search.key`) fail('invalid_export_config');
   const privateHost = new URL(provider.provider_base_url);
@@ -94,6 +92,8 @@ export async function runDemoExport(argv = process.argv.slice(2)): Promise<{ ver
   validateHosts(coordinator, provider);
   const lock = await NativeLock.acquire(join(source, '.setup.lock'));
   try {
+    const marker = await json<{ version: number }>(join(source, 'setup-initialized.json')).catch(() => fail('invalid_export_source'));
+    if (marker.version !== 1) fail('invalid_export_source');
     const manifest = await json<SetupManifest>(join(source, 'setup-manifest.json'));
     const config = await json<NativeConfig>(join(source, 'chain.json'));
     if (manifest.version !== 1 || !manifest.initialized || manifest.mode !== 'separate' || manifest.network !== 'testnet' ||
@@ -143,7 +143,7 @@ export async function runDemoExport(argv = process.argv.slice(2)): Promise<{ ver
       await save(join(target, localRole, 'economic.json'), { secret_key: key.economic.getSecretKey() });
       await save(join(target, localRole, 'identity.json'), { agent: checked[index]!.authorization.agent.agent, controller: checked[index]!.authorization.controller });
       await save(join(target, localRole, 'authorization.json'), checked[index]!.authorization);
-      await saveSecret(join(target, 'secrets', 'model.key'), secrets.model);
+      if (role === 'provider') await saveSecret(join(target, 'secrets', 'model.key'), secrets.model);
       await saveSecret(join(target, 'secrets', 'observer.token'), secrets.observer);
       if (role === 'coordinator') {
         await save(join(target, 'secrets', 'controller.json'), { secret_key: controller.getSecretKey() });

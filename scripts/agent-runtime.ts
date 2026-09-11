@@ -8,7 +8,7 @@
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync } from 'node:fs';
 import type { AgentProfile, AgentWorker } from './agent-service-types.js';
-import { OpenAIResponsesTransport } from './responses-transport.js';
+import { OpenAIResponsesTransport, parseResponsesJson } from './responses-transport.js';
 
 export interface AgentRuntimeDescriptor {
   version: 1;
@@ -175,22 +175,80 @@ function readApiKey(options: { apiKeyFile?: string; apiKey?: string }): string {
   return options.apiKey;
 }
 
+function validateProbeSummary(value: unknown, restart: boolean): void {
+  if (!isPlainObject(value)) throw new RuntimeError('invalid_live_evidence');
+  const summary = value;
+  if (summary.state !== 'completed' ||
+      !Number.isSafeInteger(summary.creates) || (summary.creates as number) < (restart ? 2 : 1) ||
+      !Number.isSafeInteger(summary.userCreateCount) || (summary.userCreateCount as number) < 1 ||
+      !Number.isSafeInteger(summary.continuationCreateCount) || (summary.continuationCreateCount as number) < 1 ||
+      !Number.isSafeInteger(summary.callbackCount) || (summary.callbackCount as number) < 1 ||
+      summary.markerObservedInOutput !== true || summary.prohibitedToolsSubmitted !== 0 ||
+      !Number.isSafeInteger(summary.rejectedDispatchCount) || (summary.rejectedDispatchCount as number) < 3 ||
+      (restart && summary.userCreatePreviousResponseIdPresent !== true)) throw new RuntimeError('invalid_live_evidence');
+  if (!isPlainObject(summary.sentinelState) || summary.sentinelState.filesystem !== false || summary.sentinelState.process !== false || summary.sentinelState.network !== false) throw new RuntimeError('invalid_live_evidence');
+  const attempts = summary.sentinelAttempts;
+  if (!Array.isArray(attempts) || attempts.length !== 3 || new Set(attempts).size !== 3 ||
+      !['filesystem_write', 'process_exec', 'network_fetch'].every(operation => attempts.includes(operation))) throw new RuntimeError('invalid_live_evidence');
+}
+
+/* This is deliberately unset in source.  A production worker may only open
+ * after an operator has reviewed a secret-free artifact produced from the
+ * current source, profile, and effective limits, then compiled that exact
+ * artifact digest into the release.  A writable 0600 file is not acceptance
+ * evidence and local probe fixtures are not a substitute for RD-0. */
+const ACCEPTED_RESPONSES_EVIDENCE_DIGEST: string | null = null;
+
+/** Validate the bounded, secret-free R14 review artifact before live worker admission. */
+export function assertResponsesLiveEvidence(path: string): void {
+  let stat;
+  try { stat = lstatSync(path); } catch { throw new RuntimeError('live_evidence_unavailable'); }
+  if (stat.isSymbolicLink() || !stat.isFile() || (stat.mode & 0o077) !== 0 || stat.size > 64 * 1024) throw new RuntimeError('unsafe_live_evidence');
+  let value: unknown;
+  try { value = parseResponsesJson(readFileSync(path, 'utf8'), 12, 4096); } catch { throw new RuntimeError('invalid_live_evidence'); }
+  if (!isPlainObject(value) || value.version !== 1 || value.runtime !== 'responses-tools-v1' || value.model !== 'gpt-5.6-luna' || value.effort !== 'xhigh' || !value.initial || !value.restart) throw new RuntimeError('invalid_live_evidence');
+  validateProbeSummary(value.initial, false); validateProbeSummary(value.restart, true);
+  if (value.continuation !== undefined) validateProbeSummary(value.continuation, false);
+}
+
+function responsesEvidenceDigest(path: string, fingerprint: string): string {
+  try { return createHash('sha256').update(readFileSync(path)).update('\n', 'utf8').update(fingerprint, 'utf8').digest('hex'); }
+  catch { throw new RuntimeError('live_evidence_unavailable'); }
+}
+
 /**
  * Production factory. R14/R15 evidence is intentionally required before this
  * entry point can admit a live model connection. It is not a fixture selector.
  */
 export async function openAgentWorker(options: {
   descriptor: AgentRuntimeDescriptor; stateDir: string; create: boolean; profile: AgentProfile;
-  apiKeyFile?: string; apiKey?: string; limits: ResponsesLimits;
+  apiKeyFile?: string; apiKey?: string; limits: ResponsesLimits; evidenceFile?: string;
 }): Promise<AgentWorker> {
   if (options.descriptor.version !== 1 || options.descriptor.kind !== 'responses-tools-v1' || options.descriptor.model !== 'gpt-5.6-luna' || options.descriptor.reasoning !== 'xhigh') throw new RuntimeError('runtime_descriptor_mismatch');
   const limits = responsesLimits('provider', options.limits);
-  const fingerprint = agentRuntimeFingerprint(options.descriptor, options.profile, limits);
-  void fingerprint;
+  // Credential syntax/file safety is validated before the evidence gate for
+  // compatibility with the existing factory diagnostics. This still opens no
+  // transport or worker; evidence admission below remains fail closed.
   const key = readApiKey({ apiKeyFile: options.apiKeyFile, apiKey: options.apiKey });
+  if (!options.evidenceFile) throw new RuntimeError('agent_tool_runtime_unvalidated');
+  assertResponsesLiveEvidence(options.evidenceFile);
+  const fingerprint = agentRuntimeFingerprint(options.descriptor, options.profile, limits);
+  const evidenceDigest = responsesEvidenceDigest(options.evidenceFile, fingerprint);
+  // No compiled acceptance digest exists in this checkout. Keep this branch
+  // fail closed until the real R14 source/profile/limits review supplies one.
+  // Including the current worker fingerprint in the digest means an accepted
+  // artifact cannot be reused with a different profile or effective limits.
+  if (ACCEPTED_RESPONSES_EVIDENCE_DIGEST === null || evidenceDigest !== ACCEPTED_RESPONSES_EVIDENCE_DIGEST) {
+    throw new RuntimeError('agent_tool_runtime_unvalidated');
+  }
   // Constructing the transport is side-effect free. Keep this here so the
   // gate cannot accidentally become an alternate backend or fixture path.
   const transport = new OpenAIResponsesTransport({ apiKey: key, maxRequestBytes: limits.maxRequestBytes, maxResponseBytes: limits.maxResponseBytes, requestTimeoutMs: limits.requestTimeoutMs, streamIdleTimeoutMs: limits.streamIdleTimeoutMs });
-  transport.close();
-  throw new RuntimeError('agent_tool_runtime_unvalidated');
+  try {
+    const { ResponsesWorker } = await import('./responses-worker.js');
+    return await ResponsesWorker.open({ stateDir: options.stateDir, create: options.create, descriptor: options.descriptor, profile: options.profile, limits, transport });
+  } catch (error) {
+    transport.close();
+    throw error;
+  }
 }

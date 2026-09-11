@@ -4,10 +4,14 @@
 Independent review and live/Fly validation remain pending. This is private demo
 runtime state, not a change to m2m wire messages, signing or settlement.
 
-The coordinator initializes budget, coordinator, worker, exchange, streaming
-engine and client at different points. Process-level `create:false` does not
-mean all those components already exist. Each role now retains a private
-`components.json` beside its runtime manifest under the existing runtime lock.
+The legacy coordinator initializes budget, coordinator, worker, exchange,
+streaming engine and client at different points. The reduced live coordinator
+instead initializes budget and the deterministic supervisor, while the provider
+initializes the bounded Responses worker, host and web policy; the exchange,
+streaming engine and client are still lazy until the one channel is funded.
+Process-level `create:false` does not mean all those components already exist.
+Each role now retains a private `components.json` beside its runtime manifest under
+the compatible `.agent-services.lock`.
 
 The version-1 registry pins role, conversation, configuration hash and whether
 explicit test dependencies were used. Entries pin component names and fixed
@@ -54,9 +58,9 @@ authorize credits, fund, close or refund.
 Older experimental demo runtime directories without this registry are refused;
 there is no automatic migration. Preserve those directories and their economic
 rights. The standalone agent-services runner and original PoC/native journals
-keep their existing formats and recovery paths. The unfinished export/init CLI
-must produce this registry through the runtime initialization contract before
-ordinary production boot; the existing export alone does not do that.
+keep their existing formats and recovery paths. The reduced `reduced-demo-init` CLI produces the empty registry and role journals
+through the same initialization contract before ordinary production boot; export
+alone still does not start a runtime or fund an agreement.
 
 `npm run agent-demo-boot-tests` runs the component crash-boundary tests, actual
 separate-root local-Iroh startup/loss tests and bounded injected runtime suite.

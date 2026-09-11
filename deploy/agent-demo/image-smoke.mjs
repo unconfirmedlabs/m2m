@@ -15,11 +15,11 @@ await mkdir('/data/m2m', { mode: 0o700 });
 const ref = byte => ({ network: [...new TextEncoder().encode('testnet')], package_id: '0x' + '01'.repeat(32), domain: '0x' + '02'.repeat(32), agent: '0x' + byte.repeat(32) });
 const config = {
   version: 1, role: 'coordinator', state_dir: '/data/m2m', conversation: '05'.repeat(32), network: 'testnet',
-  config: { version: 1, budget: { max_total_mist: '2000000', max_channel_deposit_mist: '1000000', max_turn_mist: '10000', max_outstanding_mist: '1000', max_requests: 4, deadline_ms: '9000000000000', output_tranche_bytes: 1024 }, deposit_mist: '1000000', price: { input_rate: '2', output_rate: '3', denominator: '1000' }, allowed_hosts: ['example.com'] },
+  config: { version: 1, budget: { max_total_mist: '100000', max_channel_deposit_mist: '100000', max_turn_mist: '40000', max_outstanding_mist: '1024', max_requests: 2, deadline_ms: '4102444800000', output_tranche_bytes: 256 }, deposit_mist: '100000', price: { input_rate: '0', output_rate: '1', denominator: '1' }, allowed_hosts: ['example.com'] },
   runtime: { version: 1, kind: 'responses-tools-v1', model: 'gpt-5.6-luna', reasoning: 'xhigh' }, agents: { buyer: ref('03'), provider: ref('04') },
   projection_state_dir: '/data/m2m/projection', static_dir: '/app/ui', bind_host: '0.0.0.0', port: 8080,
   provider_base_url: 'http://test-only-provider.internal:8081', public_origin: 'https://127.0.0.1:8080',
-  model_api_key_file: '/data/m2m/model-missing', wallet_file: '/data/m2m/wallet-missing',
+  wallet_file: '/data/m2m/wallet-missing',
   viewer_token_file: '/data/m2m/viewer', operator_token_file: '/data/m2m/operator', observer_token_file: '/data/m2m/observer',
 };
 for (const [file, byte] of [['viewer', '11'], ['operator', '22'], ['observer', '33']]) await writeFile(`/data/m2m/${file}`, byte.repeat(32), { mode: 0o600 });

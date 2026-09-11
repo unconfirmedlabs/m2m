@@ -1,10 +1,30 @@
 # Live investor demo: completion ledger
 
-Updated 2026-09-11. The user authorized autonomous work through an
-Astra `xhigh` specification → Luna `xhigh` implementation → Astra `xhigh` review
-pipeline. Completion means the real [demo requirements](LIVE_DEMO_PROPOSAL.md)
-and the remaining named-testnet requirements of GitHub issue #1 are verified;
-passing fixtures, a rendered mockup, or a deployable image alone is insufficient.
+Updated 2026-09-11. Active completion is now [RD-0–RD-5 in the reduced demo
+specification](REDUCED_LIVE_DEMO.md), through Astra medium specification → Luna
+xhigh implementation → Astra medium review. The two-LLM/Fly completion matrix
+below is historical; it is not the active critical path. No reduced live run or
+implementation acceptance is claimed by this documentation-only scope change.
+
+## Active reduced-demo ledger
+
+| Requirement | Current status / next evidence |
+|---|---|
+| Deterministic user-driven coordinator | Implemented in `scripts/reduced-demo-supervisor.ts`; no coordinator model/tool/planner path, exact user prompt and request-ID journal are forwarded to `AgentServiceClient`. Local regression passes. |
+| One real Luna xhigh bounded research provider | Production factory now admits only the Responses adapter after a bounded, secret-free R14 evidence file; no live evidence/credential is available in this environment, so RD-0 remains unverified. |
+| Names, Iroh and one testnet channel | Exact `NativeNames.resolve` plus exported snapshot binding, separate transport/economic key checks, Iroh/unpaid echo and existing Sui channel lifecycle are wired; fresh testnet setup and run remain external. |
+| Incremental byte payment and simple UI | Existing engine/client/events/UI are wired to the deterministic supervisor; local native/HTTP/UI regressions pass. Live mid-response credit/citation/accounting evidence remains pending. |
+| Controlled restart and explicit close | Durable role initialization, supervisor replay, same-channel client reopen and explicit close paths are wired; actual two-process testnet restart/close remains pending. |
+| Final acceptance | Astra medium review against RD-0–RD-5, current hashes and new live evidence pending; local implementation record is `validation/reduced-live-demo-implementation-2026-09-11.md`. |
+
+The [implementation tranche](REDUCED_LIVE_DEMO.md#implementation-tranche-and-dependency-order)
+classifies adapter, setup, L01–L05 and H02/H03 findings. Reachable safety and
+accounting defects remain blockers; second-LLM orchestration, Fly, exhaustive
+live failures, automatic every-boundary recovery, large SSE history and multiple
+live policies are deferred. Their records below remain intact. Protected operator
+credentials and wallet paths are runtime inputs, not specification ambiguities.
+
+## Historical work and evidence (retained)
 
 ## Usage-interruption recovery (2026-09-11)
 
@@ -39,7 +59,7 @@ captures the source hashes, passing commands and explicit limits, including the
 unproven automatic peer-loss/relisten timing. The boot/recovery suite,
 agent-services suite, TypeScript check and production server build pass.
 
-## Required end state
+## Superseded two-LLM required end state
 
 | Deliverable | Evidence needed | Current evidence/status |
 |---|---|---|
@@ -53,7 +73,7 @@ agent-services suite, TypeScript check and production server build pass.
 | Real controls and failures | Start, cancel, spending pause, reconnect, explicit settlement, unavailable credentials and uncertain execution | Existing local controls cover a subset; hosted lifecycle/HTTP/control tests required |
 | Independent final review | Astra review of implemented code, test coverage and live evidence against frozen requirements | Pending |
 
-## Current preflight
+## Historical preflight and review sequence
 
 The [read-only preflight](validation/agent-demo-preflight-2026-09-11.json) records
 available Fly access and the current SuiNS parent/leaf state. No mainnet request,
@@ -146,7 +166,7 @@ also passed: 45 Rust tests (2 explicitly ignored legacy-provider integrations),
 signature/message/recovery vectors. The native suite includes actual Iroh and
 independent TypeScript peer exchanges, not live inference or new Sui transactions.
 
-## Deployment preparation (not deployed)
+## Deferred Fly deployment preparation (not deployed)
 
 The proposed bounded layout is coordinator in `iad`, provider in `ams`, each
 with one shared vCPU, 1024 MiB RAM and one 1-GiB volume in a new app. This makes

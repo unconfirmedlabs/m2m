@@ -18,7 +18,7 @@ import type { StreamingChain } from './native-streaming-chain.js';
 import type { ChannelData, OfferData, PolicyData, SignedData } from './streaming-codec.js';
 
 const selected = process.argv[2];
-const cases = ['ticket', 'fresh-reopen', 'lost-budget', 'lost-coordinator', 'lost-worker', 'lost-worker-marker', 'lost-registry', 'prefunding-restart'] as const;
+const cases = ['ticket', 'fresh-reopen', 'lost-budget', 'lost-supervisor', 'lost-registry', 'prefunding-restart'] as const;
 type Case = typeof cases[number];
 if (process.argv.length > 3 || (selected && !cases.includes(selected as Case))) throw Error('invalid_boot_test_case');
 const binary = resolve(process.env.M2M_NATIVE_BRIDGE ?? 'target/release/native-bridge');
@@ -110,8 +110,7 @@ async function check(name: Case) {
     const runtimeRoot = join(cRoot, 'agent-services', common.conversation, 'coordinator');
     if (name.startsWith('lost-')) {
       await coordinator.shutdown(); coordinator = undefined;
-      const missing = ({ 'lost-budget': 'budget/budget.json', 'lost-coordinator': 'coordinator/coordinator.json',
-        'lost-worker': 'worker/responses-worker.json', 'lost-worker-marker': 'worker/responses-worker.initialized', 'lost-registry': 'components.json' } as Record<string, string>)[name]!;
+      const missing = ({ 'lost-budget': 'budget/budget.json', 'lost-supervisor': 'supervisor/supervisor.json', 'lost-registry': 'components.json' } as Record<string, string>)[name]!;
       const path = join(runtimeRoot, missing), original = JSON.parse(await readFile(path, 'utf8'));
       await rm(path);
       const before = { ...effects };

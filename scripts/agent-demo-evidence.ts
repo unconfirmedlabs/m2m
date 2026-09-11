@@ -93,7 +93,7 @@ function signed(value: unknown, kind: 'offer' | 'credit' | 'checkpoint', pins: D
 }
 function terminalReceipt(value: unknown, pins: DemoValidationPins): unknown {
   const request = object(value).request;
-  const checked = validateDemoSourceEvent({ version: 1, id: '01'.repeat(32), role: 'host', conversation: pins.conversation, request, at_ms: '0', type: 'turn_terminal', data: { receipt: value } }, { ...pins, source: 'coordinator' });
+  const checked = validateDemoSourceEvent({ version: 1, id: '1', role: 'host', conversation: pins.conversation, request, at_ms: '0', type: 'turn_terminal', data: { receipt: value } }, { ...pins, source: 'coordinator' });
   return (checked.data as { receipt: unknown }).receipt;
 }
 function signedEnvelope(value: unknown, pins: DemoValidationPins): Dict {
@@ -135,10 +135,10 @@ export function sanitizeDemoLocator(value: unknown, pins: DemoValidationPins): D
   } catch (error) { if (error instanceof Error && error.message === 'invalid_evidence') throw error; return bad(); }
 }
 
-export function sanitizeDemoEvidence(value: unknown, pins: DemoValidationPins, runtime: DemoRuntimeHandle, network: 'testnet' | 'localnet'): DemoEvidence {
+export function sanitizeDemoEvidence(value: unknown, pins: DemoValidationPins, runtime: DemoRuntimeHandle, network: 'testnet' | 'localnet', expectedChannel?: string): DemoEvidence {
   try {
     const raw = exact(value, ['version', 'conversation', 'channel', 'offer', 'policy', 'credits', 'checkpoints', 'terminal_receipts', 'economy']);
-    if (raw.version !== 1 || raw.conversation !== pins.conversation || address(raw.channel) !== raw.channel) return bad();
+    if (raw.version !== 1 || raw.conversation !== pins.conversation || address(raw.channel) !== raw.channel || (expectedChannel !== undefined && raw.channel !== expectedChannel)) return bad();
     if (runtime.role !== 'coordinator') return bad();
     // Reuse the frozen nested public validator for the economy.  This rejects
     // extra fields at every signed statement, budget, transaction and status

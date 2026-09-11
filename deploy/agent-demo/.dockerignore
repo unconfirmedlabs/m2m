@@ -10,6 +10,8 @@
 !package-lock.json
 !scripts/
 !scripts/agent-*.ts
+!scripts/reduced-demo-*.ts
+!scripts/reduced-live-demo.ts
 !scripts/responses-*.ts
 !scripts/native-*.ts
 !scripts/streaming-*.ts

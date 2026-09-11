@@ -102,11 +102,11 @@ function deps(chain: StreamingChain, workerFactory: DemoRuntimeTestDependencies[
 async function main(): Promise<void> {
   const root = join(tmpdir(), `m2m-demo-runtime-${randomBytes(8).toString('hex')}`); await mkdir(root, { recursive: true, mode: 0o700 });
   try {
-    // F01: the real coordinator profile/factory gate runs before bridge/fund.
+    // F01: the deterministic coordinator admits no worker/factory path before bridge/fund.
     const first = await setup(join(root, 'gate')); let workerCalls = 0;
     const failing = deps(first.chain, async () => { workerCalls++; throw new Error('agent_tool_runtime_unvalidated'); });
     const gate = await openDemoRuntime({ role: 'coordinator', stateDir: join(root, 'gate'), conversation, create: true, config, runtime: descriptor, network: 'localnet', agents, modelApiKeyFile: join(root, 'missing'), dependencies: failing, providerLocator: async () => { throw new Error('must_not_reach_locator'); } });
-    const gateResult = await gate.submit({ version: 1, id: 'aa'.repeat(32), command: { op: 'start' } }); assert.equal(gateResult.state, 'failed'); assert.equal(gateResult.code, 'agent_tool_runtime_unvalidated'); assert.equal(workerCalls, 1); assert.equal(first.fundTracker.calls, 0); await gate.shutdown();
+    const gateResult = await gate.submit({ version: 1, id: 'aa'.repeat(32), command: { op: 'start' } }); assert.equal(gateResult.state, 'failed'); assert.equal(gateResult.code, 'runtime_error'); assert.equal(workerCalls, 0); assert.equal(first.fundTracker.calls, 0); await gate.shutdown();
 
     // F02: provider role owns only its own roots and reopens the same journal.
     const provider = await setup(join(root, 'provider')); const providerKeys: string[] = [];
@@ -140,7 +140,7 @@ async function main(): Promise<void> {
     const disconnected = await c.submit({ version: 1, id: 'cc'.repeat(32), command: { op: 'disconnect' } }); assert.equal(disconnected.state, 'completed'); const reconnected = await c.submit({ version: 1, id: 'dd'.repeat(32), command: { op: 'reconnect' } }); assert.equal(reconnected.state, 'completed'); assert.equal(c.economy().length, 0); await c.shutdown();
     const c2 = await openDemoRuntime({ role: 'coordinator', stateDir: join(root, 'connected'), conversation, create: false, config, runtime: descriptor, network: 'localnet', agents, modelApiKeyFile: join(root, 'missing'), dependencies: deps(connected.chain, async () => worker(), bridgeFactory), providerLocator: async () => ({ ...p.locator()!, configuration_hash }) });
     assert.deepEqual(c2.control('bb'.repeat(32)), started); assert.equal(c2.status().spending_paused, true); const c2reconnect = await c2.submit({ version: 1, id: 'ff'.repeat(32), command: { op: 'reconnect' } }); assert.equal(c2reconnect.state, 'completed'); await c2.shutdown(); await p.shutdown();
-    console.log('PASS demo runtime: F01 gate-before-funding, F02 role-root/restart identity, F05 unpaid Iroh reconnect, durable control replay/pause; F06/F07 chain settlement not covered');
+    console.log('PASS demo runtime: F01 deterministic coordinator-before-funding, F02 role-root/restart identity, F05 unpaid Iroh reconnect, durable control replay/pause; F06/F07 chain settlement not covered');
   } finally { await rm(root, { recursive: true, force: true }); }
 }
 void main().catch(error => { console.error(error); process.exitCode = 1; });

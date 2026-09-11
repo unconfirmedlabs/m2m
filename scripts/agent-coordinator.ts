@@ -455,6 +455,10 @@ export class BudgetLedger {
   currentUnits(): Units { return [...this.journal.deliveredUnits] as Units; }
   /** Highest durably reserved/signed cumulative ceiling, never reduced by delivery. */
   reservedUnits(): Units { return [...this.journal.authorizedUnits] as Units; }
+  /** Historical terminal reservation evidence survives the active-channel reset. */
+  terminalEvidence(): { channel: string; status: 'closed' | 'refunded'; redeemedMist: string; deliveredUnits: Units; authorizedUnits: Units } | null {
+    return this.journal.terminalEvidence ? structuredClone(this.journal.terminalEvidence) : null;
+  }
   snapshot(): BudgetSnapshot {
     const limits = structuredClone(this.journal.limits);
     let authorized = '0'; let delivered = '0'; let redeemed = '0'; let channel: string | null = null;

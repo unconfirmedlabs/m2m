@@ -13,11 +13,12 @@ type Pins = { role: 'coordinator' | 'provider'; conversation: string; configurat
 type Journal = Pins & { version: 1; entries: Record<string, Entry> };
 // These factory errors occur before construction of any durable worker state.
 const WORKER_PREFLIGHT_ERRORS = new Set(['agent_tool_runtime_unvalidated', 'openai_credential_unavailable',
-  'unsafe_openai_credential', 'invalid_openai_credential', 'missing_openai_credential', 'conflicting_openai_credentials']);
+  'unsafe_openai_credential', 'invalid_openai_credential', 'missing_openai_credential', 'conflicting_openai_credentials', 'live_evidence_unavailable', 'unsafe_live_evidence', 'invalid_live_evidence', 'agent_runtime_gate_unavailable']);
 
 function filesFor(name: string): string[] {
   if (name === 'budget') return ['budget/budget.json'];
   if (name === 'coordinator') return ['coordinator/coordinator.json'];
+  if (name === 'supervisor') return ['supervisor/supervisor.json'];
   if (name === 'worker') return ['worker/responses-worker.json', 'worker/responses-worker.initialized'];
   if (name === 'exchange') return ['outbox.json'];
   const channel = /^(stream|client):(0x[0-9a-f]{64})$/.exec(name);

@@ -1,6 +1,15 @@
-# Live two-agent investor demo
+# Live demo direction and superseded proposal
 
-Updated 2026-09-11 from the user's explicit requirements. Accepted demo behavior:
+**Active completion criterion:** [Reduced live research demo](REDUCED_LIVE_DEMO.md).
+The user replaced the first demo with a deterministic user-driven coordinator,
+one real Luna xhigh research agent, real Iroh, one funded Sui testnet channel,
+incremental response-byte payments, a simple UI, one controlled restart and
+independently verified explicit close. Fly and the second LLM are deferred.
+The reduced specification governs conflicts with every requirement below.
+
+## Historical two-LLM proposal (not the active completion gate)
+
+Historical scope (superseded 2026-09-11), retained from the user's explicit requirements. Accepted demo behavior:
 Tailwind split screen; local/user agent on the left, research agent on the right;
 both make real LLM decisions and exchange real m2m messages and channel payments.
 A system prompt guides and bounds the local agent. Answers, follow-up requests,

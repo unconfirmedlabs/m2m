@@ -50,13 +50,15 @@ export interface DemoSseLease {
 
 export interface DemoCoordinatorAuthOptions {
   role: 'coordinator';
-  /** The exact public HTTPS origin, with no path, query, or fragment. */
+  /** The exact public origin (HTTPS, or reduced-local loopback HTTP), with no path, query, or fragment. */
   publicOrigin: string;
   /** The exact private Host header used by the provider listener. */
   providerHost: string;
   viewerToken: string;
   operatorToken: string;
   observerToken: string;
+  /** Reduced-local operator mode may use an HTTP loopback origin only. */
+  allowLoopbackHttp?: boolean;
   nowMs?: () => number;
 }
 export interface DemoProviderAuthOptions {
@@ -102,11 +104,11 @@ const PROVIDER_EVENTS: Route = { scope: 'provider', roles: ['observer'], mutatio
 function configBad(): never { throw new DemoAuthConfigError(); }
 function authBad(code: Exclude<DemoAuthCode, 'invalid_auth_config'>): never { throw new DemoAuthError(code); }
 
-function exactOrigin(value: unknown): { origin: string; host: string } {
+function exactOrigin(value: unknown, allowLoopbackHttp = false): { origin: string; host: string } {
   if (typeof value !== 'string' || value.length > 512 || /[\u0000-\u0020\u007f]/.test(value)) return configBad();
   let parsed: URL;
   try { parsed = new URL(value); } catch { return configBad(); }
-  if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash || parsed.origin !== value) return configBad();
+  if ((parsed.protocol !== 'https:' && !(allowLoopbackHttp && parsed.protocol === 'http:' && parsed.hostname === '127.0.0.1' && !!parsed.port)) || parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash || parsed.origin !== value) return configBad();
   return { origin: parsed.origin, host: parsed.host };
 }
 
@@ -244,7 +246,7 @@ export class DemoAuth {
 
   constructor(options: DemoAuthOptions) {
     this.role = options.role;
-    const origin = options.role === 'coordinator' ? exactOrigin(options.publicOrigin) : null;
+    const origin = options.role === 'coordinator' ? exactOrigin(options.publicOrigin, options.allowLoopbackHttp === true) : null;
     this.publicOrigin = origin?.origin ?? null;
     this.publicHost = origin?.host ?? null;
     this.providerHost = exactPrivateHost(options.providerHost);

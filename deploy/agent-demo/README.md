@@ -75,19 +75,45 @@ dedicated IPv4, autoscaler, automatic volume extension or extra writer is includ
 
 ## Role initialization and deployment boundary
 
-Executable creation/export steps remain pending the tested production `host.json`
-entrypoint and role-export implementation. **Do not deploy these templates yet.**
-This is the remaining integration, not permission to bypass a missing runtime or
-substitute a sample backend. Creation must be recorded one exact resource at a
-time, with one volume ID bound to one Machine ID per app. Future updates target
-that recorded Machine and volume; do not use an application-wide scale command.
+The reduced operator entrypoint is implemented and compiled into the image. It is
+still a fail-closed runner: it does not create keys, publish Move packages,
+register names, fund a channel, or select a fixture. Native setup/export and
+public testnet authority remain explicit operator steps. Creation must be recorded
+one exact resource at a time, with one volume ID bound to one Machine ID per app.
 
-The image command is `node /app/scripts/agent-demo-server.js --config
-/data/m2m/host.json`. The protected `/data/m2m` directory must already exist on the
-actual mounted volume, be owned by UID/GID 1000, and use directory/file modes
-0700/0600. Boot must reject missing initialized records, mismatched deployment
-pins and placeholder configuration. It must not publish, generate replacement
-keys, register names, open a deposit or start an LLM task.
+On each role's private mounted volume, after the exported `host.json` and protected
+secret files are present, run exactly:
+
+```sh
+node /app/scripts/reduced-live-demo.js init --config /data/m2m/host.json
+node /app/scripts/reduced-live-demo.js serve --config /data/m2m/host.json
+```
+
+For a source checkout the equivalent is:
+
+```sh
+npm run reduced-live-demo -- init --config /data/m2m/host.json
+npm run reduced-live-demo -- serve --config /data/m2m/host.json
+```
+
+The initializer creates only the role's durable manifest, offline runtime journal,
+public event journal, projection journal, component registry, supervisor journal,
+and provider host journal. It requires an empty role conversation root and mode
+0700 state. The
+server then reopens with `create:false`, validates the testnet chain/domain,
+re-resolves both exact SuiNS leaves and their parent against the exported snapshot,
+checks the local role's transport/economic key pins, and only then admits Iroh or
+provider work. The image command remains `node /app/scripts/agent-demo-server.js
+--config /data/m2m/host.json`; `serve` invokes that same server path. Boot rejects
+missing initialized records, mismatched deployment pins and placeholder
+configuration. It must not generate replacement keys or start an LLM task.
+
+For the ordinary same-host reduced-local topology, prepare one protected
+serialized config per role with `topology: "reduced-local-v1"`, distinct 0700
+state/projection roots, `127.0.0.1` binds and origins, and the built
+`ui/agent-demo/dist` directory. Run `init` for both configs, then run both
+`serve --config /absolute/path/to/role.json` processes; without the protected
+chain/model inputs they bind only the truthful unavailable boundary.
 
 Role-specific transfer must include only the following authority:
 
@@ -97,7 +123,7 @@ Role-specific transfer must include only the following authority:
 | Own transport/economic private keys | Local Agent only | Research Agent only |
 | Funded demo-controller wallet | Yes | No |
 | Parent SuiNS wallet | **Never** | **Never** |
-| Explicit model API credential | Yes | Yes |
+| Explicit model API credential | No (deterministic coordinator) | Yes |
 | Search API credential | No | Yes |
 | Viewer/operator bearer tokens | Yes | No |
 | Independent observer bearer token | Yes | Yes |

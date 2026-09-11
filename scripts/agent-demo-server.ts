@@ -1,6 +1,6 @@
 import http, { type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { createHash } from 'node:crypto';
-import { lstat, readFile, realpath, stat } from 'node:fs/promises';
+import { lstat, readFile, realpath } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DemoAuth, DemoAuthError, type DemoAuthPrincipal } from './agent-demo-auth.js';
@@ -43,11 +43,13 @@ const SAFE_CODES = new Set([
   'future_cursor', 'projection_gap', 'projection_conflict', 'projection_limit', 'projection_corrupt', 'projection_pin_mismatch',
   'control_conflict', 'not_ready', 'projection_not_ready', 'invalid_evidence', 'request_timeout', 'response_too_large', 'provider_unavailable', 'runtime_error',
   'journal_missing', 'storage_failure', 'backend_unavailable', 'invalid_control', 'control_not_allowed', 'channel_mismatch', 'funding_uncertain',
+  'uncertain_execution', 'budget_uncertain', 'channel_not_open', 'limit_exceeded', 'conversation_busy', 'spending_paused', 'funding_uncertain', 'settlement_uncertain', 'worker_shutdown_uncertain',
 ]);
 
 /** Protected production bootstrap. Secrets are file paths, never inline values. */
 export type DemoHostConfig = {
   version: 1;
+  topology: 'fly-v1' | 'reduced-local-v1';
   role: MachineRole;
   state_dir: string;
   conversation: string;
@@ -61,7 +63,7 @@ export type DemoHostConfig = {
   port: number;
   provider_base_url: string;
   public_origin?: string;
-  model_api_key_file: string;
+  model_api_key_file?: string;
   search_api_key_file?: string;
   wallet_file?: string;
   viewer_token_file?: string;
@@ -112,7 +114,17 @@ function agentConfig(value: unknown): AgentServiceConfig {
   for (const field of ['deposit_mist'] as const) if (typeof object[field] !== 'string' || !/^(0|[1-9][0-9]*)$/.test(object[field] as string)) fixed('invalid_host_config');
   for (const field of ['max_total_mist', 'max_channel_deposit_mist', 'max_turn_mist', 'max_outstanding_mist', 'deadline_ms'] as const) if (typeof budget[field] !== 'string' || !/^(0|[1-9][0-9]*)$/.test(budget[field] as string)) fixed('invalid_host_config');
   for (const field of ['input_rate', 'output_rate', 'denominator'] as const) if (typeof price[field] !== 'string' || !/^(0|[1-9][0-9]*)$/.test(price[field] as string)) fixed('invalid_host_config');
-  if (budget.max_requests !== 4 || !Number.isSafeInteger(budget.output_tranche_bytes) || (budget.output_tranche_bytes as number) < 1 || (budget.output_tranche_bytes as number) > 262_144 || price.denominator === '0' || object.deposit_mist === '0') fixed('invalid_host_config');
+  // These are the reduced application terms. Generic AgentServiceConfig
+  // remains configurable; only this serialized reduced-demo boundary fixes
+  // the public demo's price and upper bounds.
+  if (object.deposit_mist === '0' || price.input_rate !== '0' || price.output_rate !== '1' || price.denominator !== '1' ||
+      budget.max_requests !== 1 && budget.max_requests !== 2 || budget.output_tranche_bytes !== 256 ||
+      [budget.max_total_mist, budget.max_channel_deposit_mist, budget.max_turn_mist, budget.max_outstanding_mist].some(value => value === '0') ||
+      BigInt(object.deposit_mist as string) > 100_000n || BigInt(budget.max_total_mist as string) > 100_000n ||
+      BigInt(budget.max_channel_deposit_mist as string) > 100_000n || BigInt(budget.max_turn_mist as string) > 40_000n ||
+      BigInt(budget.max_outstanding_mist as string) > 1_024n ||
+      BigInt(budget.max_channel_deposit_mist as string) > BigInt(budget.max_total_mist as string) ||
+      BigInt(object.deposit_mist as string) > BigInt(budget.max_channel_deposit_mist as string)) fixed('invalid_host_config');
   return structuredClone(object) as unknown as AgentServiceConfig;
 }
 function runtimeDescriptor(value: unknown): AgentRuntimeDescriptor {
@@ -126,11 +138,21 @@ function privateUrl(value: unknown): string {
   if (url.protocol !== 'http:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash || !url.port || url.port === '0') fixed('invalid_host_config');
   return value;
 }
-function publicOrigin(value: unknown): string {
+function publicOrigin(value: unknown, local = false, port?: number): string {
   if (typeof value !== 'string' || value.length > 512) fixed('invalid_host_config');
   let url: URL; try { url = new URL(value); } catch { fixed('invalid_host_config'); }
-  if (url.protocol !== 'https:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash || url.origin !== value) fixed('invalid_host_config');
+  if ((!local && url.protocol !== 'https:') || (local && (url.protocol !== 'http:' || url.hostname !== '127.0.0.1' || url.port !== String(port))) || url.username || url.password || url.pathname !== '/' || url.search || url.hash || url.origin !== value) fixed('invalid_host_config');
   return value;
+}
+async function protectedDirectory(path: string): Promise<void> {
+  const metadata = await lstat(path).catch(() => null);
+  if (!metadata || metadata.isSymbolicLink() || !metadata.isDirectory() || (metadata.mode & 0o077) !== 0) fixed('invalid_host_config');
+}
+async function builtUi(path: string): Promise<void> {
+  const directory = await lstat(path).catch(() => null);
+  if (!directory || directory.isSymbolicLink() || !directory.isDirectory()) fixed('invalid_host_config');
+  const metadata = await lstat(join(path, 'index.html')).catch(() => null);
+  if (!metadata || metadata.isSymbolicLink() || !metadata.isFile()) fixed('invalid_host_config');
 }
 async function protectedToken(path: string): Promise<string> {
   const metadata = await lstat(path).catch(() => null);
@@ -147,24 +169,37 @@ export async function readDemoHostConfig(path: string): Promise<DemoHostConfig> 
   noPlaceholders(value); const root = own(value);
   if (root.role !== 'coordinator' && root.role !== 'provider') fixed('invalid_host_config');
   const role = root.role as MachineRole;
-  const common = ['version', 'role', 'state_dir', 'conversation', 'network', 'config', 'runtime', 'agents', 'projection_state_dir', 'static_dir', 'bind_host', 'port', 'provider_base_url', 'model_api_key_file', 'observer_token_file'];
-  const expected = role === 'coordinator' ? [...common, 'public_origin', 'wallet_file', 'viewer_token_file', 'operator_token_file'] : [...common, 'search_api_key_file'];
+  const common = ['version', 'role', 'state_dir', 'conversation', 'network', 'config', 'runtime', 'agents', 'projection_state_dir', 'static_dir', 'bind_host', 'port', 'provider_base_url', 'observer_token_file'];
+  const topology = root.topology === undefined ? 'fly-v1' : root.topology === 'reduced-local-v1' ? 'reduced-local-v1' : fixed('invalid_host_config');
+  const topologyFields = topology === 'reduced-local-v1' ? ['topology'] : [];
+  const expected = role === 'coordinator' ? [...topologyFields, ...common, 'public_origin', 'wallet_file', 'viewer_token_file', 'operator_token_file'] : [...topologyFields, ...common, 'model_api_key_file', 'search_api_key_file'];
   const object = exactConfig(value, expected);
-  if (object.version !== 1 || object.network !== 'testnet' || typeof object.bind_host !== 'string' || (role === 'coordinator' ? object.bind_host !== '0.0.0.0' || object.port !== 8080 : object.bind_host !== 'fly-local-6pn' || object.port !== 8081)) fixed('invalid_host_config');
-  const stateDir = hostPath(object.state_dir, '/data/m2m'); if (stateDir !== '/data/m2m') fixed('invalid_host_config');
+  if (object.version !== 1 || object.network !== 'testnet' || typeof object.bind_host !== 'string' ||
+      (topology === 'fly-v1' && (role === 'coordinator' ? object.bind_host !== '0.0.0.0' || object.port !== 8080 : object.bind_host !== 'fly-local-6pn' || object.port !== 8081)) ||
+      (topology === 'reduced-local-v1' && (object.bind_host !== '127.0.0.1' || !Number.isSafeInteger(object.port) || (object.port as number) < 1 || (object.port as number) > 65_535))) fixed('invalid_host_config');
+  const stateDir = hostPath(object.state_dir, topology === 'fly-v1' ? '/data/m2m' : '/tmp/m2m'); if (topology === 'fly-v1' && stateDir !== '/data/m2m') fixed('invalid_host_config');
   const projectionDir = hostPath(object.projection_state_dir, stateDir, false); if (projectionDir !== join(stateDir, 'projection')) fixed('invalid_host_config');
-  const staticDir = hostPath(object.static_dir, stateDir); if (staticDir !== '/app/ui') fixed('invalid_host_config');
-  id(object.conversation); privateUrl(object.provider_base_url); if (role === 'coordinator') publicOrigin(object.public_origin);
+  const staticDir = hostPath(object.static_dir, stateDir); if (topology === 'fly-v1' && staticDir !== '/app/ui') fixed('invalid_host_config');
+  if (topology === 'reduced-local-v1') { await protectedDirectory(stateDir); await builtUi(staticDir); }
+  id(object.conversation); privateUrl(object.provider_base_url); if (topology === 'reduced-local-v1') {
+    try { const privateEndpoint = new URL(object.provider_base_url as string); if (privateEndpoint.hostname !== '127.0.0.1') fixed('invalid_host_config'); } catch { fixed('invalid_host_config'); }
+  }
+  if (role === 'coordinator') publicOrigin(object.public_origin, topology === 'reduced-local-v1', object.port as number);
   const agents = exactConfig(object.agents, ['buyer', 'provider']); const parsedAgents = { buyer: agentRef(agents.buyer), provider: agentRef(agents.provider) };
   const config = agentConfig(object.config); const runtime = runtimeDescriptor(object.runtime);
-  const result: DemoHostConfig = { version: 1, role, state_dir: stateDir, conversation: object.conversation as string, network: 'testnet', config, runtime, agents: parsedAgents,
+  const result: DemoHostConfig = { version: 1, topology, role, state_dir: stateDir, conversation: object.conversation as string, network: 'testnet', config, runtime, agents: parsedAgents,
     projection_state_dir: projectionDir, static_dir: staticDir, bind_host: object.bind_host as string, port: object.port as number, provider_base_url: object.provider_base_url as string,
-    public_origin: role === 'coordinator' ? object.public_origin as string : undefined, model_api_key_file: hostPath(object.model_api_key_file, stateDir),
+    public_origin: role === 'coordinator' ? object.public_origin as string : undefined, model_api_key_file: role === 'provider' ? hostPath(object.model_api_key_file, stateDir) : undefined,
     search_api_key_file: role === 'provider' ? hostPath(object.search_api_key_file, stateDir) : undefined,
     wallet_file: role === 'coordinator' ? hostPath(object.wallet_file, stateDir) : undefined,
-    viewer_token_file: role === 'coordinator' ? hostPath(object.viewer_token_file, stateDir) : undefined,
-    operator_token_file: role === 'coordinator' ? hostPath(object.operator_token_file, stateDir) : undefined,
-    observer_token_file: hostPath(object.observer_token_file, stateDir) };
+    viewer_token_file: role === 'coordinator' ? hostPath(object.viewer_token_file, stateDir, topology === 'fly-v1') : undefined,
+    operator_token_file: role === 'coordinator' ? hostPath(object.operator_token_file, stateDir, topology === 'fly-v1') : undefined,
+    observer_token_file: hostPath(object.observer_token_file, stateDir, topology === 'fly-v1') };
+  if (topology === 'reduced-local-v1') {
+    result.wallet_file = role === 'coordinator' ? hostPath(object.wallet_file, stateDir, false) : undefined;
+    result.model_api_key_file = role === 'provider' ? hostPath(object.model_api_key_file, stateDir, false) : undefined;
+    result.search_api_key_file = role === 'provider' ? hostPath(object.search_api_key_file, stateDir, false) : undefined;
+  }
   return result;
 }
 function safeCode(error: unknown): string {
@@ -177,7 +212,8 @@ function statusFor(code: string): number {
   if (code === 'not_found') return 404;
   if (code === 'body_too_large') return 413;
   if (code === 'rate_limited' || code === 'sse_limit') return 429;
-  if (code === 'projection_gap' || code === 'projection_conflict' || code === 'control_conflict' || code === 'not_ready' || code === 'projection_not_ready') return 409;
+  if (code === 'projection_gap' || code === 'projection_conflict' || code === 'control_conflict' || code === 'not_ready' || code === 'projection_not_ready' ||
+      code === 'uncertain_execution' || code === 'budget_uncertain' || code === 'channel_not_open' || code === 'limit_exceeded' || code === 'conversation_busy' || code === 'spending_paused' || code === 'funding_uncertain' || code === 'settlement_uncertain' || code === 'worker_shutdown_uncertain') return 409;
   if (code === 'invalid_request' || code === 'invalid_event_cursor') return 400;
   if (code === 'projection_corrupt' || code === 'projection_pin_mismatch' || code === 'journal_missing' || code === 'runtime_error') return 503;
   return 503;
@@ -264,7 +300,7 @@ function parseLastEventId(request: IncomingMessage, conversation: string): U64 {
 async function openBlockedHttp(config: DemoHostConfig, tokens: { viewer?: string; operator?: string; observer: string }): Promise<HttpResult> {
   const privateHost = configuredPrivateHost(config.provider_base_url, config.bind_host, config.port);
   const auth = config.role === 'coordinator'
-    ? new DemoAuth({ role: 'coordinator', publicOrigin: config.public_origin ?? '', providerHost: privateHost, viewerToken: tokens.viewer ?? '', operatorToken: tokens.operator ?? '', observerToken: tokens.observer })
+    ? new DemoAuth({ role: 'coordinator', publicOrigin: config.public_origin ?? '', providerHost: privateHost, viewerToken: tokens.viewer ?? '', operatorToken: tokens.operator ?? '', observerToken: tokens.observer, allowLoopbackHttp: config.topology === 'reduced-local-v1' })
     : new DemoAuth({ role: 'provider', providerHost: privateHost, observerToken: tokens.observer });
   const staticRoot = resolve(config.static_dir);
   const server = http.createServer((request, response) => {
@@ -392,7 +428,7 @@ export async function openDemoHttp(options: DemoHttpOptions): Promise<HttpResult
   let auth: DemoAuth;
   try {
     auth = options.runtime.role === 'coordinator'
-      ? new DemoAuth({ role: 'coordinator', publicOrigin: options.publicOrigin ?? '', providerHost: privateHost, viewerToken: options.viewerToken ?? '', operatorToken: options.operatorToken ?? '', observerToken: options.observerToken })
+      ? new DemoAuth({ role: 'coordinator', publicOrigin: options.publicOrigin ?? '', providerHost: privateHost, viewerToken: options.viewerToken ?? '', operatorToken: options.operatorToken ?? '', observerToken: options.observerToken, allowLoopbackHttp: options.publicOrigin?.startsWith('http://127.0.0.1:') === true })
       : new DemoAuth({ role: 'provider', providerHost: privateHost, observerToken: options.observerToken });
   } catch (error) { await stopBackground(); await projection.close(); throw error; }
   const staticRoot = options.staticDir ? resolve(options.staticDir) : null;
@@ -445,7 +481,7 @@ export async function openDemoHttp(options: DemoHttpOptions): Promise<HttpResult
         const channel = evidenceAddress(path);
         if (channel !== null) {
           const rawEvidence = await finite(options.runtime.evidence(channel));
-          const evidence = sanitizeDemoEvidence(rawEvidence, pins, options.runtime, options.network ?? 'testnet');
+          const evidence = sanitizeDemoEvidence(rawEvidence, pins, options.runtime, options.network ?? 'testnet', channel);
           return sendJson(response, 200, evidence);
         }
         if (path === '/api/v1/events') return streamEvents(request, response, principal);
@@ -457,7 +493,7 @@ export async function openDemoHttp(options: DemoHttpOptions): Promise<HttpResult
     }
     return serveStatic(request, response, path);
   };
-  const streamEvents = (request: IncomingMessage, response: ServerResponse, principal: DemoAuthPrincipal): void => {
+  const streamEvents = async (request: IncomingMessage, response: ServerResponse, principal: DemoAuthPrincipal): Promise<void> => {
     let after: U64;
     try { after = parseLastEventId(request, options.runtime.conversation); if (BigInt(after) > BigInt(projection.highWater())) throw new DemoAuthError('rate_limited'); }
     catch (error) { if (error instanceof DemoAuthError) sendError(response, error.code === 'rate_limited' ? 409 : error.status, error.code === 'rate_limited' ? 'future_cursor' : error.code); else sendError(response, 400, 'invalid_event_cursor'); return; }
@@ -467,13 +503,15 @@ export async function openDemoHttp(options: DemoHttpOptions): Promise<HttpResult
     let heartbeat: NodeJS.Timeout | undefined;
     let unsubscribe: (() => void) | undefined;
     const buffered: DemoEvent[] = [];
+    let bufferedBytes = 0;
     let replaying = true;
     const seen = new Set<string>();
+    const bufferedSeen = new Set<string>();
     let nextSequence = BigInt(after) + 1n;
-    const queueFrame = (frame: Buffer): void => {
-      if (closed) return;
-      queued.push(frame); queuedBytes += frame.length;
-      if (queuedBytes > MAX_SSE_BUFFER_BYTES) { stop(); return; }
+    const queueFrame = (frame: Buffer): boolean => {
+      if (closed) return false;
+      if (queuedBytes + frame.length > MAX_SSE_BUFFER_BYTES) { stop(); return false; }
+      queued.push(frame); queuedBytes += frame.length; return true;
     };
     const enqueueEvent = (event: DemoEvent): void => {
       if (closed) return;
@@ -489,6 +527,7 @@ export async function openDemoHttp(options: DemoHttpOptions): Promise<HttpResult
       if (heartbeat) clearInterval(heartbeat);
       pendingWrite?.(); pendingWrite = undefined;
       activeStreams.delete(stop);
+      queued = []; buffered.length = 0; queuedBytes = 0; bufferedBytes = 0;
     };
     const stop = () => { cleanup(); if (!response.writableEnded) response.end(); };
     const write = (frame: Buffer) => new Promise<void>(resolveWrite => {
@@ -509,32 +548,47 @@ export async function openDemoHttp(options: DemoHttpOptions): Promise<HttpResult
     request.on('aborted', stop); response.on('close', onClose); response.on('error', stop);
     unsubscribe = projection.subscribe(event => {
       if (closed) return;
-      if (replaying) buffered.push(event);
-      else { try { enqueueEvent(event); void flush(); } catch { stop(); } }
+      if (replaying) {
+        if (bufferedSeen.has(event.sequence)) return;
+        const frameSize = sseFrame('agent_event', event, `${options.runtime.conversation}:${event.sequence}`).length;
+        if (bufferedBytes + frameSize > MAX_SSE_BUFFER_BYTES) { stop(); return; }
+        bufferedSeen.add(event.sequence); buffered.push(event); bufferedBytes += frameSize;
+      } else { try { enqueueEvent(event); void flush(); } catch { stop(); } }
     });
     activeStreams.add(stop);
     response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', 'Connection': 'keep-alive', 'X-Content-Type-Options': 'nosniff' });
     const highWater = projection.highWater();
-    queueFrame(sseFrame('stream_status', { version: 1, conversation: options.runtime.conversation, state: 'replaying', high_water: highWater }));
     try {
+      if (!queueFrame(sseFrame('stream_status', { version: 1, conversation: options.runtime.conversation, state: 'replaying', high_water: highWater }))) return;
+      await flush();
       let cursor = after;
-      while (BigInt(cursor) < BigInt(highWater)) {
+      while (!closed && BigInt(cursor) < BigInt(highWater)) {
         const page = projection.replay(cursor, 256);
         if (page.length === 0) throw new Error('projection_gap');
         let advanced = false;
         for (const event of page) {
           if (BigInt(event.sequence) > BigInt(highWater)) break;
           enqueueEvent(event); cursor = event.sequence; advanced = true;
+          await flush();
+          if (closed) return;
         }
         if (!advanced) throw new Error('projection_gap');
       }
+      // Queue the live marker and flip the subscription synchronously before
+      // the first await. A publication during marker backpressure is then
+      // queued after the marker instead of being stranded in buffered[].
+      while (!closed && buffered.length > 0) {
+        buffered.sort((left, right) => Number(BigInt(left.sequence) - BigInt(right.sequence)));
+        const pending = buffered.splice(0, buffered.length);
+        bufferedBytes = 0;
+        for (const event of pending) { enqueueEvent(event); await flush(); if (closed) return; }
+      }
+      if (!queueFrame(sseFrame('stream_status', { version: 1, conversation: options.runtime.conversation, state: 'live', high_water: projection.highWater() }))) return;
       replaying = false;
-      buffered.sort((left, right) => Number(BigInt(left.sequence) - BigInt(right.sequence)));
-      for (const event of buffered) enqueueEvent(event);
-      buffered.length = 0;
-      queueFrame(sseFrame('stream_status', { version: 1, conversation: options.runtime.conversation, state: 'live', high_water: projection.highWater() }));
+      bufferedSeen.clear(); bufferedBytes = 0;
+      await flush();
+      if (closed) return;
       heartbeat = setInterval(() => { if (!closed) { queueFrame(Buffer.from(': heartbeat\n\n')); void flush(); } }, 15_000);
-      void flush();
     } catch { stop(); }
   };
   const serveStatic = async (request: IncomingMessage, response: ServerResponse, path: string): Promise<void> => {
@@ -551,10 +605,9 @@ export async function openDemoHttp(options: DemoHttpOptions): Promise<HttpResult
 
 /** Production-only adapter. It accepts no dependency/factory override. */
 export async function runDemoServer(configPath: string): Promise<void> {
-  if (configPath !== '/data/m2m/host.json') fixed('invalid_host_config');
   const config = await readDemoHostConfig(configPath);
-  const stateMetadata = await stat(config.state_dir).catch(() => null);
-  if (!stateMetadata?.isDirectory()) fixed('state_directory_missing');
+  const stateMetadata = await lstat(config.state_dir).catch(() => null);
+  if (!stateMetadata?.isDirectory() || stateMetadata.isSymbolicLink()) fixed('state_directory_missing');
   if ((stateMetadata.mode & 0o077) !== 0) fixed('state_directory_permissions');
   const { role, state_dir: stateDir, conversation, config: serviceConfig, runtime: descriptor, agents } = config;
   const observerToken = await protectedToken(config.observer_token_file);
@@ -569,8 +622,8 @@ export async function runDemoServer(configPath: string): Promise<void> {
   let runtime: DemoRuntimeHandle;
   try {
     const { openDemoRuntime } = await import('./agent-demo-runtime.js');
-    runtime = await openDemoRuntime({ role, stateDir, conversation, create: false, config: serviceConfig, runtime: descriptor, network: config.network, agents,
-      walletFile: config.wallet_file, modelApiKeyFile: config.model_api_key_file, searchApiKeyFile: config.search_api_key_file,
+    runtime = await openDemoRuntime({ role, stateDir, conversation, create: false, config: serviceConfig, runtime: descriptor, network: config.network, agents, reduced: config.topology === 'reduced-local-v1',
+      walletFile: config.wallet_file, modelApiKeyFile: config.model_api_key_file, searchApiKeyFile: config.search_api_key_file, providerGateFile: join(stateDir, 'responses-live-evidence.json'),
       providerLocator: providerClient ? () => providerClient.locator() : undefined });
   } catch {
     // Preflight failures never become a fake handle or a ready snapshot. Keep

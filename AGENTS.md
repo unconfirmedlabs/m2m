@@ -34,7 +34,7 @@ must not require an LLM or a particular agent framework.
 - [Message examples](examples/messages/README.md): every current wire message, with checked signatures and explicit implementation status.
 - [Core message proposal](docs/CORE_MESSAGE_PROPOSAL.md): draft native messaging foundation; not implemented or a released wire contract.
 - [Native implementation](docs/NATIVE_QUICKSTART.md): experimental core/streaming contracts, [compatibility](docs/NATIVE_COMPATIBILITY.md), and [validation limits](docs/NATIVE_VALIDATION.md).
-- [Live demo requirements](docs/LIVE_DEMO_PROPOSAL.md): Tailwind split screen and two real LLM agents; no scripted investor-demo behavior or fixture fallback.
+- [Active reduced live demo](docs/REDUCED_LIVE_DEMO.md): deterministic user-driven coordinator, one real Luna xhigh research agent, Iroh, one testnet channel, incremental byte payments, simple UI, controlled restart and verified close. [Earlier two-LLM proposal](docs/LIVE_DEMO_PROPOSAL.md) is superseded; no scripted answers or fixture fallback.
 - [Agent services](docs/AGENT_SERVICES_SPEC.md): v2 continuing research conversations, bounded tools/budgets, [implementation contracts](docs/AGENT_SERVICES_IMPLEMENTATION.md), and [validation gates](docs/AGENT_SERVICES_VALIDATION.md).
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
 - [Payment messages and settlement methods](docs/SETTLEMENT_PROFILES.md): core payment vocabulary and optional cumulative channels; actual ZK proofs are a separate future method.
@@ -57,8 +57,10 @@ pending. The original native coordinator is programmed. A separate agent-service
 runner now implements bounded tools and continuing conversations with localnet
 payment/restart evidence using fixture inference. Live profiles fail before funding
 under AS-20 until registered-only tool isolation is validated; preserve this gate.
-Full two-LLM web research, Fly and UI remain separate
-validation/deployment gates, not established product behavior.
+The active first-demo gates are RD-0–RD-5 in the reduced specification; they
+remain unverified. Two-LLM coordination and Fly are deferred, not completion
+prerequisites. Preserve provider tool isolation before live funding; removing
+the coordinator LLM does not waive that gate.
 For that use case, the user selected a funded channel with incremental response
 payments through signed offchain updates. Adapt the tunnel flow; do not make
 subjective task completion or final-answer acceptance a payment prerequisite.

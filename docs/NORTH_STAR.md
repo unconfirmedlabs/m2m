@@ -30,8 +30,8 @@ dependency order.
 The [named research-agent proposal](RESEARCH_AGENT_PROPOSAL.md) applies those
 boundaries to a prospective Codex service with independently selected pricing
 and settlement. The current implementation is a narrower text-worker binding;
-the [two-live-agent demo](LIVE_DEMO_PROPOSAL.md) is the next proposed application,
-not a scripted replacement for that workflow.
+the [reduced live demo](REDUCED_LIVE_DEMO.md) is the active next application: a
+user-driven deterministic coordinator and one live research agent.
 
 ## 1. Make the benefit concrete
 

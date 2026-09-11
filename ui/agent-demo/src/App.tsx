@@ -162,7 +162,11 @@ function App() {
   };
 
   if (!authenticated || !state.snapshot) return <LoginScreen token={tokenInput} setToken={setTokenInput} onSubmit={login} error={loginError} />;
-  return <Dashboard access={access} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel} state={state} prompt={prompt} setPrompt={setPrompt} busy={busy} pending={pending} notice={notice} onSend={send} onLogout={logout} />;
+  const refreshStatus = async () => {
+    setBusy(true); setNotice(null);
+    try { dispatch({ type: 'snapshot', snapshot: await api.status() }); } catch (error) { setNotice(codeOf(error)); } finally { setBusy(false); }
+  };
+  return <Dashboard access={access} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel} state={state} prompt={prompt} setPrompt={setPrompt} busy={busy} pending={pending} notice={notice} onSend={send} onStatus={refreshStatus} onLogout={logout} />;
 }
 
 function LoginScreen({ token, setToken, onSubmit, error }: { token: string; setToken(value: string): void; onSubmit(event: React.FormEvent): void; error: string | null }) {
@@ -181,14 +185,13 @@ function LoginScreen({ token, setToken, onSubmit, error }: { token: string; setT
   </main>;
 }
 
-function Dashboard({ access, selectedChannel, setSelectedChannel, state, prompt, setPrompt, busy, pending, notice, onSend, onLogout }: {
+function Dashboard({ access, selectedChannel, setSelectedChannel, state, prompt, setPrompt, busy, pending, notice, onSend, onStatus, onLogout }: {
   access: 'viewer' | 'operator';
   selectedChannel: string | null; setSelectedChannel(value: string): void;
   state: ReturnType<typeof initialUiState>; prompt: string; setPrompt(value: string): void; busy: boolean; pending: Record<string, DemoControlRecord>; notice: string | null;
-  onSend(command: DemoCommand, id?: string): Promise<void>; onLogout(): void;
+  onSend(command: DemoCommand, id?: string): Promise<void>; onStatus(): Promise<void>; onLogout(): void;
 }) {
   const snapshot = state.snapshot!;
-  const activeTask = snapshot.roles.coordinator.active_task;
   const selected = snapshot.channels.find(channel => channel.channel === selectedChannel) ?? snapshot.channels[0];
   const economy = selected ? deriveEconomy(selected) : null;
   const isViewer = access === 'viewer';
@@ -209,22 +212,19 @@ function Dashboard({ access, selectedChannel, setSelectedChannel, state, prompt,
       </section>
       <section className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
         <div className="card">
-          <div className="flex items-start justify-between gap-4"><div><p className="eyebrow">Operator controls</p><h2 className="section-title">Choose the next real operation</h2></div><span className="status-dot"><i />{snapshot.roles.coordinator.phase}</span></div>
-          <label htmlFor="task-prompt" className="field-label mt-6">Unseen task prompt</label>
-          <textarea id="task-prompt" className="input min-h-24 resize-y" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder="Ask the coordinator to investigate something…" />
+          <div className="flex items-start justify-between gap-4"><div><p className="eyebrow">User-driven coordinator</p><h2 className="section-title">Submit one research turn</h2></div><span className="status-dot"><i />{snapshot.roles.coordinator.phase}</span></div>
+          <label htmlFor="task-prompt" className="field-label mt-6">Research prompt (forwarded exactly)</label>
+          <textarea id="task-prompt" className="input min-h-24 resize-y" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder="Enter the question to forward to the funded research service…" />
           <div className="mt-4 flex flex-wrap gap-2">
-            <button className="button button-primary" disabled={!can('task') || !prompt.trim()} onClick={() => { void onSend({ op: 'task', prompt }); }}>Send task</button>
-            <button className="button" disabled={!can('start')} onClick={() => void onSend({ op: 'start' })}>Start / reconnect</button>
-            <button className="button" disabled={!can('fund')} onClick={() => void onSend({ op: 'fund', configuration_hash: snapshot.configuration_hash, previous_channel: snapshot.selected_channel })}>Fund displayed terms</button>
-            <button className="button button-danger" disabled={!can('cancel') || !activeTask} onClick={() => void onSend({ op: 'cancel', task: activeTask ?? '' })}>Cancel active task</button>
+            <button className="button button-primary" disabled={busy || !can('task') || !prompt.trim()} onClick={() => { void onSend({ op: 'task', prompt }); }}>Submit turn</button>
+            <button className="button" disabled={busy || !can('start')} onClick={() => void onSend({ op: 'start' })}>Start connection</button>
+            <button className="button" disabled={busy || !can('fund')} onClick={() => void onSend({ op: 'fund', configuration_hash: snapshot.configuration_hash, previous_channel: snapshot.selected_channel })}>Fund one channel</button>
+            <button className="button button-small" disabled={busy} onClick={() => void onStatus()}>Refresh status</button>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button className="button button-small" disabled={!can('spending')} onClick={() => void onSend({ op: 'spending', paused: !snapshot.roles.coordinator.spending_paused })}>{snapshot.roles.coordinator.spending_paused ? 'Resume spending' : 'Pause spending'}</button>
-            <button className="button button-small" disabled={!can('disconnect')} onClick={() => void onSend({ op: 'disconnect' })}>Disconnect Iroh</button>
-            <button className="button button-small" disabled={!can('reconnect')} onClick={() => void onSend({ op: 'reconnect' })}>Reconnect Iroh</button>
-            {selected && <><button className="button button-small" disabled={!can('close')} onClick={() => void onSend({ op: 'close', channel: selected.channel })}>Close channel</button><button className="button button-small" disabled={!can('refund')} onClick={() => void onSend({ op: 'refund', channel: selected.channel })}>Refund when eligible</button></>}
+            {selected && <button className="button button-danger button-small" disabled={busy || !can('close')} onClick={() => void onSend({ op: 'close', channel: selected.channel })}>Close channel</button>}
           </div>
-          <p className="mt-4 text-xs text-slate-500">Controls remain available during a durable operation so cancellation and spending pause are not stranded behind a lost response.</p>
+          <p className="mt-4 text-xs text-slate-500">Only the submitted prompt is dispatched. Restart/replay is an operator process action; settlement is an explicit close after the turn.</p>
           {latestPending && <p className="mt-4 rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-600">Operation <code>{latestPending.id.slice(0, 10)}…</code> is {latestPending.state}{latestPending.code ? ` · ${latestPending.code}` : ''}.</p>}
           {notice && <p className="mt-3 error-text" role="alert">{notice}</p>}
         </div>

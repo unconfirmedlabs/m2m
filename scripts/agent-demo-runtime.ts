@@ -3,14 +3,14 @@
  *
  * This module is deliberately a supervisor around the existing service
  * engines.  It does not contain a second payment or model implementation:
- * StreamingChain/StreamingEngine, AgentServiceClient and AgentCoordinator
+ * StreamingChain/StreamingEngine, AgentServiceClient and deterministic supervisor
  * remain the authorities for those operations.
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { lstat, mkdir, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { toBase58 } from '@mysten/sui/utils';
-import { AgentCoordinator, BudgetLedger } from './agent-coordinator.js';
+import { BudgetLedger } from './agent-coordinator.js';
 import { AgentEvents, type AgentPublicEvent } from './agent-events.js';
 import { DemoComponents } from './agent-demo-components.js';
 import { AgentServiceClient } from './agent-service-client.js';
@@ -20,10 +20,12 @@ import { BoundedWebTools, BraveSearchBackend } from './agent-web.js';
 import { NativeLock } from './native-lock.js';
 import { authority, IrohBridge, NativeInbox, NativePeer } from './native-peer.js';
 import { readKey, readOptional, save, type Authorization, type NativeConfig } from './native-chain.js';
+import { NativeNames } from './native-names.js';
 import { StreamingChain } from './native-streaming-chain.js';
 import { StreamingEngine, type StreamingBinding } from './streaming-engine.js';
 import { agentRuntimeFingerprint, openAgentWorker, responsesLimits, type AgentRuntimeDescriptor, type ResponsesLimits } from './agent-runtime.js';
 import type { AgentProfile, AgentWorker, EventSink, PinnedAgents, ResearchPort } from './agent-service-types.js';
+import { DeterministicDemoSupervisor, deterministicSupervisorProfile } from './reduced-demo-supervisor.js';
 import { equal, exactKeys, hash, makePolicy, price, validateSigned, type CheckpointData, type CreditData, type OfferData, type PolicyData, type SignedData } from './streaming-codec.js';
 import { canonicalDemoJson, validateDemoControl, validateDemoControlRecord } from './agent-demo-event-contract.js';
 import type {
@@ -96,7 +98,7 @@ function validAgentRef(ref: unknown): ref is PinnedAgents['buyer'] {
     typeof ref.package_id === 'string' && ADDRESS_RE.test(ref.package_id) && typeof ref.domain === 'string' && ADDRESS_RE.test(ref.domain) &&
     typeof ref.agent === 'string' && ADDRESS_RE.test(ref.agent);
 }
-function validateConfig(config: AgentServiceConfig): PolicyData {
+function validateConfig(config: AgentServiceConfig, reduced = false): PolicyData {
   exactKeys(config, ['version', 'budget', 'deposit_mist', 'price', 'allowed_hosts']);
   exactKeys(config.price, ['input_rate', 'output_rate', 'denominator']);
   if (config.version !== 1 || !Array.isArray(config.allowed_hosts) || config.allowed_hosts.length < 1 || config.allowed_hosts.length > 32 ||
@@ -107,6 +109,14 @@ function validateConfig(config: AgentServiceConfig): PolicyData {
     if (typeof value !== 'string' || !/^(0|[1-9][0-9]*)$/.test(value)) throw new Error('invalid_config');
   }
   if (config.deposit_mist === '0' || config.price.denominator === '0') throw new Error('invalid_config');
+  if (reduced && (config.price.input_rate !== '0' || config.price.output_rate !== '1' || config.price.denominator !== '1' ||
+      config.budget.max_requests < 1 || config.budget.max_requests > 2 || config.budget.output_tranche_bytes !== 256 ||
+      [config.deposit_mist, config.budget.max_total_mist, config.budget.max_channel_deposit_mist, config.budget.max_turn_mist, config.budget.max_outstanding_mist].some(value => value === '0') ||
+      BigInt(config.deposit_mist) > 100_000n || BigInt(config.budget.max_total_mist) > 100_000n ||
+      BigInt(config.budget.max_channel_deposit_mist) > 100_000n || BigInt(config.budget.max_turn_mist) > 40_000n ||
+      BigInt(config.budget.max_outstanding_mist) > 1_024n ||
+      BigInt(config.budget.max_channel_deposit_mist) > BigInt(config.budget.max_total_mist) ||
+      BigInt(config.deposit_mist) > BigInt(config.budget.max_channel_deposit_mist))) throw new Error('invalid_config');
   return makePolicy(['input_utf8_bytes', 'output_utf8_bytes'], [config.price.input_rate, config.price.output_rate], config.price.denominator);
 }
 function readSafeManifest(value: unknown, expected: Omit<RuntimeManifest, 'initialized'>): RuntimeManifest {
@@ -139,26 +149,55 @@ function transaction(value: unknown): DemoEconomy['opening'] {
   if (state === 'submitted' || state === 'pending') return { state: 'pending', digest: typeof value.digest === 'string' ? value.digest : null, gas: null };
   return { state: 'unknown', digest: null, gas: null };
 }
+function observedTransaction(observed: Awaited<ReturnType<StreamingChain['channel']>> | undefined, fallback: DemoEconomy['opening'] | null): DemoEconomy['opening'] | null {
+  if (!observed) return fallback;
+  if (observed.status !== 0 && observed.terminal_tx.length > 0) return { state: 'confirmed', digest: toBase58(Uint8Array.from(observed.terminal_tx)), gas: null };
+  return fallback;
+}
 function latestEngine(engine: StreamingEngine | undefined): { credit: SignedData<CreditData> | null; checkpoint: SignedData<CheckpointData> | null; units: [string, string] } {
   if (!engine) return { credit: null, checkpoint: null, units: ['0', '0'] };
   const records = engine.replay(); const last = records.at(-1); const delivery = records.flatMap(record => record.deliveries).at(-1);
   return { credit: last?.credit ?? null, checkpoint: delivery?.checkpoint ?? null, units: (delivery?.checkpoint.payload.units ?? ['0', '0']) as [string, string] };
 }
 
+async function verifyExportedNames(state: string, chain: StreamingChain, agents: PinnedAgents, authorities: { buyer: Authorization; provider: Authorization }): Promise<boolean> {
+  const snapshot = await readOptional<unknown>(join(state, 'public-identities.json'));
+  if (!isRecord(snapshot) || snapshot.version !== 1 || canonicalDemoJson(snapshot.agents) !== canonicalDemoJson(agents) || !Array.isArray(snapshot.names) || snapshot.names.length !== 2) throw new Error('identity_changed');
+  const expected = [
+    { name: 'local.nozomi.sui', ref: agents.buyer, auth: authorities.buyer },
+    { name: 'research.nozomi.sui', ref: agents.provider, auth: authorities.provider },
+  ];
+  // The export is a retained evidence snapshot, not an alias authority. Re-read
+  // both exact leaves and the parent on every production boot, then bind the
+  // snapshot to those results before any Iroh or economic side effect.
+  const current = await Promise.all(expected.map(item => new NativeNames(chain).resolve(item.name, item.ref)));
+  for (const [index, item] of snapshot.names.entries()) {
+    const live = current[index]!;
+    if (!isRecord(item) || item.name !== expected[index]!.name || !isRecord(item.parent) || canonicalDemoJson(item.parent) !== canonicalDemoJson(live.parent) ||
+        !isRecord(item.authorization) || canonicalDemoJson(item.authorization.agent) !== canonicalDemoJson(live.authorization.agent) ||
+        item.authorization.controller !== live.authorization.controller || !equal(item.authorization.transport_key, live.authorization.transport_key) ||
+        !equal(item.authorization.economic_key, live.authorization.economic_key) || canonicalDemoJson(item.authorization.agent) !== canonicalDemoJson(expected[index]!.ref) ||
+        item.authorization.controller !== expected[index]!.auth.controller || !equal(item.authorization.transport_key, expected[index]!.auth.transport_key) ||
+        !equal(item.authorization.economic_key, expected[index]!.auth.economic_key)) throw new Error('identity_changed');
+  }
+  return true;
+}
+
 export async function openDemoRuntime(options: {
   role: MachineRole; stateDir: string; conversation: ID; create: boolean; config: AgentServiceConfig;
   runtime: AgentRuntimeDescriptor; network: 'testnet' | 'localnet'; agents: { buyer: PinnedAgents['buyer']; provider: PinnedAgents['provider'] };
-  walletFile?: string; modelApiKeyFile: string; searchApiKeyFile?: string; providerLocator?: () => Promise<DemoLocator>;
+  reduced?: boolean;
+  walletFile?: string; modelApiKeyFile?: string; searchApiKeyFile?: string; providerGateFile?: string; providerLocator?: () => Promise<DemoLocator>;
   dependencies?: DemoRuntimeTestDependencies;
 }): Promise<DemoRuntimeHandle> {
-  if (!options || !ID_RE.test(options.conversation) || !options.stateDir || !options.modelApiKeyFile ||
+  if (!options || !ID_RE.test(options.conversation) || !options.stateDir || (options.role === 'provider' && !options.modelApiKeyFile) ||
       (options.network !== 'localnet' && options.network !== 'testnet') || !validAgentRef(options.agents.buyer) || !validAgentRef(options.agents.provider)) throw new Error('invalid_runtime_config');
-  const policy = validateConfig(options.config);
+  const policy = validateConfig(options.config, options.reduced === true);
   const configHash = configurationHash(options.config, options.agents);
   const state = resolve(options.stateDir);
   const root = join(state, 'agent-services', options.conversation, options.role);
   await mkdir(root, { recursive: true, mode: 0o700 });
-  const lock = await NativeLock.acquire(join(root, 'runtime.lock'));
+  const lock = await NativeLock.acquire(join(root, '.agent-services.lock'));
   let events: AgentEvents | undefined;
   let worker: AgentWorker | undefined;
   let web: Pick<BoundedWebTools, 'profile' | 'sources' | 'close'> | undefined;
@@ -171,14 +210,14 @@ export async function openDemoRuntime(options: {
   let exchange: DurableAgentExchange | undefined;
   let engine: StreamingEngine | undefined;
   let client: AgentServiceClient | undefined;
-  let coordinator: AgentCoordinator | undefined;
+  let supervisor: DeterministicDemoSupervisor | undefined;
   let coordinatorProfile: AgentProfile | undefined;
   let roleProfile: AgentProfile | undefined;
-  let coordinatorWorker: AgentWorker | undefined;
   let researchPort: ResearchPort | undefined;
   let locator: DemoLocator | null = null;
   let providerAuthority: Authorization | undefined;
   let localAuthority: Authorization | undefined;
+  let aliasesVerified = options.dependencies ? false : true;
   let observedChannel: Awaited<ReturnType<StreamingChain['channel']>> | undefined;
   let openingTransaction: DemoEconomy['opening'] = { state: 'unknown', digest: null, gas: null };
   let terminalTransaction: DemoEconomy['opening'] | null = null;
@@ -248,6 +287,13 @@ export async function openDemoRuntime(options: {
     const [buyerAuth, researchAuth] = await Promise.all([chain.resolve(options.agents.buyer), chain.resolve(options.agents.provider)]);
     localAuthority = buyerAuth; providerAuthority = researchAuth;
     if (equal(buyerAuth.transport_key, buyerAuth.economic_key) || equal(researchAuth.transport_key, researchAuth.economic_key)) throw new Error('identity_changed');
+    const ownAuthority = options.role === 'coordinator' ? buyerAuth : researchAuth;
+    if (!options.dependencies) aliasesVerified = await verifyExportedNames(state, chain, options.agents, { buyer: buyerAuth, provider: researchAuth });
+    const ownTransport = await readKey(transportKeyFile);
+    const ownEconomic = await readKey(economicKeyFile);
+    if (!equal([...ownTransport.getPublicKey().toRawBytes()], ownAuthority.transport_key) ||
+        !equal([...ownEconomic.getPublicKey().toRawBytes()], ownAuthority.economic_key) ||
+        equal([...ownTransport.getPublicKey().toRawBytes()], [...ownEconomic.getPublicKey().toRawBytes()])) throw new Error('identity_changed');
     if (options.role === 'provider') {
       const limits = responsesLimits('provider');
       if (options.dependencies) {
@@ -275,7 +321,7 @@ export async function openDemoRuntime(options: {
           await emit({ role: 'research', conversation: options.conversation, request: call.request.requestId, type: 'tool_result', data: { name: call.name, call_id: call.callId, success: result.success, result_bytes: Buffer.byteLength(result.text) } });
           return result;
         };
-        await components.openComponent('worker', async create => worker = await openAgentWorker({ descriptor: options.runtime, stateDir: join(root, 'worker'), create, profile, apiKeyFile: options.modelApiKeyFile, limits }));
+        await components.openComponent('worker', async create => worker = await openAgentWorker({ descriptor: options.runtime, stateDir: join(root, 'worker'), create, profile, apiKeyFile: options.modelApiKeyFile, limits, evidenceFile: options.providerGateFile }));
       }
       host = await AgentServiceHost.open({ stateDir: root, create: options.create, conversation: options.conversation,
         agents: options.agents, policy, deposit: options.config.deposit_mist, chain, signer: await readKey(economicKeyFile), worker: worker!, sources: web.sources });
@@ -288,8 +334,7 @@ export async function openDemoRuntime(options: {
       providerLoop = providerServe();
       await emit({ role: 'host', conversation: options.conversation, request: null, type: 'runtime', data: { status: roleStatus('ready', null) } });
     } else {
-      const limits = responsesLimits('coordinator');
-      if (options.dependencies && (!options.dependencies.workerFactory || !options.dependencies.webToolsFactory)) throw new Error('test_dependencies_required');
+      roleProfile = deterministicSupervisorProfile(); coordinatorProfile = roleProfile;
       if (!options.create) {
         const savedOpening = await readOptional<{ nonce: number[]; binding: StreamingBinding | null }>(join(root, 'opening.json'));
         if (savedOpening?.binding) {
@@ -298,23 +343,27 @@ export async function openDemoRuntime(options: {
           await components.openComponent(`stream:${savedOpening.binding.channel}`, async () => engine = await StreamingEngine.open(join(channelDir, 'stream.json'), 'buyer', savedOpening.binding!, await readKey(economicKeyFile)));
           journal.selected_channel = savedOpening.binding.channel;
           openingTransaction = transaction(await readOptional<unknown>(join(root, `fund-${Buffer.from(savedOpening.nonce).toString('hex')}.tx.json`)) ?? { state: 'unknown' });
+          if (!options.dependencies && typeof chain.channel === 'function') {
+            observedChannel = await chain.channel(savedOpening.binding.channel);
+            terminalTransaction = observedTransaction(observedChannel, transaction(await readOptional<unknown>(join(root, 'channels', savedOpening.binding.channel.slice(2), 'close.tx.json')) ?? { state: 'unknown' }));
+          }
           await persistJournal();
         }
       }
-      // The coordinator is opened lazily, but start() performs its real
-      // profile/factory gate before any bridge or funding side effect.
+      // The reduced coordinator is deterministic and has no worker/factory
+      // path. It only forwards an explicit user task after funding.
       await emit({ role: 'host', conversation: options.conversation, request: null, type: 'runtime', data: { status: roleStatus('ready', null) } });
-      void limits;
     }
   } catch (error) {
     await cleanup().catch(() => {}); throw error;
   }
 
   function roleStatus(phase: DemoRoleStatus['phase'], code: string | null): DemoRoleStatus {
-    const status = coordinator?.status();
+    const status = supervisor?.status();
+    const blocked = journal.selected_channel ? taskAdmissionBlock() : null;
     const profile = roleProfile ?? coordinatorProfile;
     const cursor = cursorFor(events?.replay() ?? []);
-    return { version: 1, role: options.role, conversation: options.conversation, phase, code,
+    return { version: 1, role: options.role, conversation: options.conversation, phase: blocked ? 'blocked' : phase, code: blocked ?? code,
       runtime: clone(options.runtime), profile_fingerprint: profile ? agentRuntimeFingerprint(options.runtime, profile, responsesLimits(options.role)) : createHash('sha256').update(canonicalDemoJson(options.runtime)).digest('hex'),
       configuration_hash: configHash, active_task: status?.activeTask ?? null, active_request: status?.activeRequest ?? null,
       spending_paused: journal.spending_paused, waiting_for_credit: false,
@@ -323,19 +372,28 @@ export async function openDemoRuntime(options: {
   function identity(role: MachineRole): DemoIdentity {
     const auth = role === 'coordinator' ? localAuthority! : providerAuthority!;
     return { name: role === 'coordinator' ? 'local.nozomi.sui' : 'research.nozomi.sui', agent: clone(auth.agent), controller: auth.controller,
-      transport_key: [...auth.transport_key], economic_key: [...auth.economic_key], generation: auth.generation, authority_checked_at_ms: auth.read_at_ms, alias_state: 'verified' };
+      transport_key: [...auth.transport_key], economic_key: [...auth.economic_key], generation: auth.generation, authority_checked_at_ms: auth.read_at_ms, alias_state: aliasesVerified ? 'verified' : 'stale' };
   }
   function selectedEconomy(): DemoEconomy[] {
     if (!engine || !budget || !engine.snapshot()) return [];
-    const snapshot = engine.snapshot(); const last = latestEngine(engine); const b = budget.snapshot();
-    const status = snapshot.frozen ? 'closed' : observedChannel?.status === 2 ? 'refunded' : observedChannel?.status === 1 ? 'closed' : 'open';
-    const redeemed = observedChannel?.redeemed_amount ?? b.redeemed_mist;
+    const snapshot = engine.snapshot(); const last = latestEngine(engine); const b = budget.snapshot(); const history = budget.terminalEvidence();
+    const historicalDeliveredUnits = history?.deliveredUnits ?? last.units;
+    const historicalAuthorizedMist = history ? price(snapshot.binding.policy, history.authorizedUnits) : b.authorized_mist;
+    const historicalDeliveredMist = price(snapshot.binding.policy, historicalDeliveredUnits);
+    const observedTerminal = observedChannel?.status === 1 || observedChannel?.status === 2;
+    const redeemed = observedTerminal ? observedChannel!.redeemed_amount : null;
+    const terminal = observedTransaction(observedChannel!, terminalTransaction);
+    const confirmedTerminal = observedTerminal && terminal?.state === 'confirmed';
+    // A final signed checkpoint is consent, not settlement. Until a terminal
+    // chain observation is present, expose the economy as unknown.
+    const status = confirmedTerminal ? (observedChannel!.status === 2 ? 'refunded' : 'closed') : snapshot.frozen || observedTerminal ? 'unknown' : 'open';
+    const reservedExposure = BigInt(historicalAuthorizedMist) > BigInt(historicalDeliveredMist) ? String(BigInt(historicalAuthorizedMist) - BigInt(historicalDeliveredMist)) : '0';
     return [{ channel: snapshot.binding.channel, status, offer: clone(snapshot.binding.offer), policy: clone(snapshot.binding.policy), signed_credit: last.credit,
-      checkpoint: last.checkpoint, budget: b, delivered_units: last.units, delivered_mist: price(snapshot.binding.policy, last.units),
-      signed_authorized_mist: last.credit?.payload.cumulative_amount ?? '0', reserved_mist: b.authorized_mist, outstanding_mist: b.outstanding_mist,
-      reserved_exposure_mist: b.outstanding_mist, redeemed_mist: b.redeemed_mist === '0' ? null : b.redeemed_mist,
-      locked_mist: observedChannel?.funds ?? null, refunded_mist: status === 'refunded' ? String(BigInt(snapshot.binding.offer.payload.deposit) - BigInt(redeemed)) : null,
-      observed_at_ms: observedChannel ? String(clock.nowMs()) : null, opening: clone(openingTransaction), terminal: clone(terminalTransaction) }];
+      checkpoint: last.checkpoint, budget: b, delivered_units: historicalDeliveredUnits, delivered_mist: historicalDeliveredMist,
+      signed_authorized_mist: last.credit?.payload.cumulative_amount ?? historicalAuthorizedMist, reserved_mist: historicalAuthorizedMist, outstanding_mist: confirmedTerminal ? '0' : b.outstanding_mist,
+      reserved_exposure_mist: confirmedTerminal ? '0' : (b.channel === null ? reservedExposure : b.outstanding_mist), redeemed_mist: redeemed,
+      locked_mist: observedChannel?.funds ?? null, refunded_mist: confirmedTerminal && status === 'refunded' ? String(BigInt(snapshot.binding.offer.payload.deposit) - BigInt(redeemed!)) : null,
+      observed_at_ms: observedChannel ? String(clock.nowMs()) : null, opening: clone(openingTransaction), terminal: clone(terminal) }];
   }
   function publicStatus(): DemoRoleStatus { return clone(roleStatus(peer ? 'active' : 'ready', null)); }
   function publication(): DemoPublication { return clone(publicationState); }
@@ -359,36 +417,37 @@ export async function openDemoRuntime(options: {
   }
   function recordFor(id: ID): DemoControlRecord | undefined { return journal.controls.find(item => item.id === id); }
   function admission<T>(fn: () => Promise<T>): Promise<T> { const result = queue.then(fn); queue = result.catch(() => {}); return result; }
-
-  async function coordinatorWorkerFactory(profile: AgentProfile): Promise<AgentWorker> {
-    if (coordinatorWorker) return coordinatorWorker;
-    const limits = responsesLimits('coordinator');
-    await components.openComponent('worker', async create => coordinatorWorker = await (options.dependencies
-      ? options.dependencies.workerFactory({ role: 'coordinator', descriptor: options.runtime, stateDir: join(root, 'worker'), create, profile, limits })
-      : openAgentWorker({ descriptor: options.runtime, stateDir: join(root, 'worker'), create, profile, apiKeyFile: options.modelApiKeyFile, limits })));
-    return coordinatorWorker!;
-  }
   async function openBudget(): Promise<void> {
     if (!budget) await components.openComponent('budget', async create => budget = await BudgetLedger.open({ stateDir: join(root, 'budget'), create, limits: options.config.budget, buyer: options.agents.buyer, provider: options.agents.provider }));
   }
-  async function prepareCoordinator(): Promise<void> {
-    if (coordinator) return;
-    await openBudget();
-    await components.openComponent('coordinator', async create => coordinator = await AgentCoordinator.open({ stateDir: join(root, 'coordinator'), create, conversation: options.conversation,
-      buyer: options.agents.buyer, provider: options.agents.provider, budget: budget!, port: deferredPort, workerFactory: coordinatorWorkerFactory, emit, strictEvents: true }));
-    coordinatorProfile = coordinator!.profile();
-    roleProfile = coordinatorProfile;
-    // This is the actual adapter/factory gate. It performs no model request
-    // and is completed before Iroh start/funding can be admitted.
-    try { await coordinatorWorkerFactory(coordinatorProfile); }
-    catch (error) { await coordinator!.shutdown(); coordinator = undefined; await budget!.close(); budget = undefined; throw error; }
+  function taskAdmissionBlock(explicitTaskId?: ID): 'channel_not_open' | 'spending_paused' | 'budget_uncertain' | 'uncertain_execution' | 'conversation_busy' | 'limit_exceeded' | null {
+    if (options.role !== 'coordinator') return null;
+    if (!peer || !journal.selected_channel) return 'channel_not_open';
+    if (!engine || !client || observedChannel?.status !== 0 || engine.snapshot().frozen) return 'channel_not_open';
+    if (journal.spending_paused) return 'spending_paused';
+    if (budget?.snapshot().uncertain) return 'budget_uncertain';
+    if (!supervisor) return 'channel_not_open';
+    const status = supervisor.status();
+    if (status.activeTask && status.activeTask !== explicitTaskId) return 'conversation_busy';
+    const taskState = explicitTaskId ? supervisor.taskState(explicitTaskId) : null;
+    if (explicitTaskId && taskState === 'uncertain') return null;
+    return supervisor.submissionBlock();
+  }
+  async function normalizeRecoveredTaskControls(): Promise<void> {
+    if (!supervisor) return;
+    const recovered = supervisor.status();
+    if (recovered.state !== 'uncertain' || !recovered.activeTask) return;
+    const record = journal.controls.find(item => item.task === recovered.activeTask);
+    if (record && record.state === 'running') { record.state = 'uncertain'; record.code = 'uncertain_execution'; record.updated_at_ms = String(clock.nowMs()); await persistJournal(); }
   }
 
   async function start(): Promise<void> {
     if (options.role !== 'coordinator') return;
     if (peer) return;
     await components.validate();
-    await prepareCoordinator();
+    await openBudget();
+    await components.openComponent('supervisor', async create => supervisor = await DeterministicDemoSupervisor.open({ stateDir: root, create, conversation: options.conversation, configurationHash: configHash, port: deferredPort, config: options.config }));
+    await normalizeRecoveredTaskControls();
     if (!options.providerLocator) throw new Error('provider_unavailable');
     const remote = await options.providerLocator();
     if (remote.version !== 1 || remote.conversation !== options.conversation || canonicalDemoJson(remote.provider) !== canonicalDemoJson(options.agents.provider) || remote.configuration_hash !== configHash) throw new Error('locator_mismatch');
@@ -415,7 +474,7 @@ export async function openDemoRuntime(options: {
     await emit({ role: 'host', conversation: options.conversation, request: null, type: 'connection', data: { connection: publicStatus().connection, actor: 'operator' } });
   }
   async function fund(command: Extract<DemoCommand, { op: 'fund' }>): Promise<void> {
-    if (options.role !== 'coordinator' || !peer || !coordinator) throw new Error('connection_failed');
+    if (options.role !== 'coordinator' || !peer) throw new Error('connection_failed');
     if (engine && client) { if (command.previous_channel !== journal.selected_channel) throw new Error('channel_mismatch'); return; }
     await components.validate();
     await openBudget();
@@ -452,44 +511,54 @@ export async function openDemoRuntime(options: {
       settle: async (credit, checkpoint) => { const result = await chain!.closeExact(credit, checkpoint, await readKey(options.walletFile!), join(chDir, 'close.tx.json')); const observed = await chain!.channel(binding!.channel); return { channel: observed, digest: typeof result.digest === 'string' ? result.digest : toBase58(Uint8Array.from(observed.terminal_tx)) }; }, emit }));
     client!.setSpendingPaused(journal.spending_paused);
     researchPort = client;
-    // A task control that was durably accepted before a process crash is
-    // resumed with its original ID/prompt once the operator has explicitly
-    // restored the funded channel. AgentCoordinator reconciles any saved
-    // worker operation; this never allocates a replacement request.
-    for (const pending of journal.controls.filter(record => (record.state === 'accepted' || record.state === 'running') && record.command.op === 'task')) {
-      void finishControl({ version: 1, id: pending.id, command: pending.command }, pending).catch(() => {});
-    }
+    await components.openComponent('supervisor', async create => supervisor = await DeterministicDemoSupervisor.open({ stateDir: root, create, conversation: options.conversation, configurationHash: configHash, port: client!, config: options.config }));
+    await normalizeRecoveredTaskControls();
   }
-  async function runTask(id: ID, prompt: string): Promise<void> {
-    if (!coordinator) throw new Error('channel_not_open');
+  async function runTask(id: ID, prompt: string, explicitUncertainReplay = false): Promise<void> {
+    if (!supervisor) throw new Error('channel_not_open');
+    const blocked = taskAdmissionBlock(explicitUncertainReplay ? id : undefined);
+    if (blocked) throw new Error(blocked);
     await components.validate();
-    const result = await coordinator.run({ id, prompt });
-    if (result.state === 'uncertain') throw new Error('uncertain_execution');
+    await supervisor.run({ id, prompt });
   }
   async function closeChannel(channel: Address): Promise<void> {
     if (!engine || !client || journal.selected_channel !== channel) throw new Error('channel_mismatch');
-    await client.close(); terminalTransaction = transaction(await readOptional<unknown>(join(root, 'channels', channel.slice(2), 'close.tx.json')) ?? { state: 'unknown' }); observedChannel = await chain!.channel(channel); await emitObservation(channel, observedChannel, terminalTransaction);
+    try {
+      await client.close();
+    } catch (error) {
+      // A lost close response is not consent and is not a confirmed close.
+      // Retain an explicit unknown transaction and refresh the read-only chain
+      // observation when possible; the public view will expose unknown state.
+      if (error instanceof Error && ['settlement_uncertain', 'uncertain_execution'].includes(error.message)) {
+        terminalTransaction = transaction(await readOptional<unknown>(join(root, 'channels', channel.slice(2), 'close.tx.json')) ?? { state: 'unknown' });
+        try { observedChannel = await chain!.channel(channel); terminalTransaction = observedTransaction(observedChannel, terminalTransaction); } catch { /* retain unknown evidence */ }
+        if (observedChannel && observedChannel.status !== 0) await emitObservation(channel, observedChannel, terminalTransaction);
+      }
+      throw error;
+    }
+    terminalTransaction = transaction(await readOptional<unknown>(join(root, 'channels', channel.slice(2), 'close.tx.json')) ?? { state: 'unknown' });
+    observedChannel = await chain!.channel(channel); terminalTransaction = observedTransaction(observedChannel, terminalTransaction); await emitObservation(channel, observedChannel, terminalTransaction);
   }
   async function refundChannel(channel: Address): Promise<void> {
     if (!options.walletFile || journal.selected_channel !== channel) throw new Error('channel_mismatch');
     const journalFile = join(root, `refund-${channel.slice(2)}.tx.json`);
-    await chain!.refund(channel, await readKey(options.walletFile), journalFile); terminalTransaction = transaction(await readOptional<unknown>(journalFile) ?? { state: 'unknown' }); observedChannel = await chain!.channel(channel); await emitObservation(channel, observedChannel, terminalTransaction);
+    await chain!.refund(channel, await readKey(options.walletFile), journalFile); terminalTransaction = transaction(await readOptional<unknown>(journalFile) ?? { state: 'unknown' }); observedChannel = await chain!.channel(channel); terminalTransaction = observedTransaction(observedChannel, terminalTransaction); await emitObservation(channel, observedChannel, terminalTransaction);
   }
-  async function runControl(control: DemoControl): Promise<void> {
+  async function runControl(control: DemoControl, explicitUncertainReplay = false): Promise<void> {
     const op = control.command.op;
     if (op === 'start') return start();
     if (op === 'fund') { if (control.command.configuration_hash !== configHash) throw new Error('configuration_mismatch'); return fund(control.command); }
-    if (op === 'task') { if (journal.spending_paused) throw new Error('spending_paused'); return runTask(control.id, control.command.prompt); }
-    if (op === 'cancel') { await coordinator?.cancel(); return; }
+    if (op === 'task') return runTask(control.id, control.command.prompt, explicitUncertainReplay);
+    if (op === 'cancel') { await supervisor?.cancel(); return; }
     if (op === 'spending') { journal.spending_paused = control.command.paused; client?.setSpendingPaused(journal.spending_paused); await persistJournal(); await emit({ role: 'host', conversation: options.conversation, request: null, type: 'connection', data: { connection: publicStatus().connection, actor: 'operator' } }); return; }
     if (op === 'disconnect') { journal.desired = 'offline'; await persistJournal(); bridge?.close(); peer = undefined; return; }
     if (op === 'reconnect') { journal.desired = 'online'; await persistJournal(); return start(); }
     if (op === 'close') return closeChannel(control.command.channel);
     if (op === 'refund') return refundChannel(control.command.channel);
   }
-  async function finishControl(checked: DemoControl, accepted: DemoControlRecord): Promise<DemoControlRecord> {
-    try { await runControl(checked); accepted.state = 'completed'; accepted.code = null; }
-    catch (error) { const code = safeCode(error); accepted.state = ['uncertain_execution', 'funding_uncertain', 'settlement_uncertain', 'worker_shutdown_uncertain'].includes(code) ? 'uncertain' : 'failed'; accepted.code = code; }
+  async function finishControl(checked: DemoControl, accepted: DemoControlRecord, explicitUncertainReplay = false): Promise<DemoControlRecord> {
+    try { await runControl(checked, explicitUncertainReplay); accepted.state = 'completed'; accepted.code = null; }
+    catch (error) { const code = safeCode(error); accepted.state = ['uncertain_execution', 'funding_uncertain', 'settlement_uncertain', 'budget_uncertain', 'worker_shutdown_uncertain'].includes(code) ? 'uncertain' : 'failed'; accepted.code = code; }
     accepted.updated_at_ms = String(clock.nowMs());
     try { await persistJournal(); await emit({ role: 'host', conversation: options.conversation, request: null, type: 'control', data: { control: accepted } }); publicationReady(); }
     catch { publicationFailed(); throw new Error('publication_failed'); }
@@ -526,12 +595,18 @@ export async function openDemoRuntime(options: {
   }
   async function cleanup(): Promise<void> {
     stop = true; providerAbort.abort(); bridge?.close();
-    await providerLoop?.catch(() => {});
-    await coordinator?.shutdown();
-    await coordinatorWorker?.shutdown?.(); coordinatorWorker?.close();
-    await host?.close().catch(() => {}); await inbox?.close().catch(() => {});
-    await worker?.shutdown?.().catch(() => {}); worker?.close(); web?.close();
-    await journalWrites.catch(() => {}); await budget?.close().catch(() => {}); await events?.close().catch(() => {}); await lock.close();
+    let uncertain = false;
+    try { await providerLoop; } catch { uncertain = true; }
+    try { await supervisor?.shutdown(); } catch { uncertain = true; }
+    try { await host?.close(); } catch { uncertain = true; }
+    try { await inbox?.close(); } catch { uncertain = true; }
+    try { await worker?.shutdown?.(); } catch { uncertain = true; }
+    if (!uncertain) { worker?.close(); web?.close(); }
+    try { await journalWrites; } catch { uncertain = true; }
+    try { await budget?.close(); } catch { uncertain = true; }
+    try { await events?.close(); } catch { uncertain = true; }
+    if (uncertain) throw Error('worker_shutdown_uncertain');
+    await lock.close();
   }
   const handle: DemoRuntimeHandle = {
     role: options.role, conversation: options.conversation,
@@ -539,7 +614,14 @@ export async function openDemoRuntime(options: {
     availableControls: () => {
       if (options.role !== 'coordinator') return [];
       const controls: DemoCommand['op'][] = ['spending'];
-      if (peer) { if (!engine) controls.push('fund'); if (journal.selected_channel && coordinator && !journal.spending_paused && coordinator.status().activeTask === null) controls.push('task'); if (coordinator?.status().activeTask) controls.push('cancel'); controls.push('disconnect'); }
+      if (peer) {
+        if (!engine) controls.push('fund');
+        const taskBlock = taskAdmissionBlock();
+        const supervisorStatus = supervisor?.status();
+        if (journal.selected_channel && supervisor && !taskBlock && supervisorStatus?.activeTask === null) controls.push('task');
+        if (supervisorStatus?.state === 'running' && supervisorStatus.activeTask) controls.push('cancel');
+        controls.push('disconnect');
+      }
       else controls.push('start');
       if (!peer && journal.desired === 'offline') controls.push('reconnect');
       if (engine && journal.selected_channel) { controls.push('close'); controls.push('refund'); }
@@ -548,7 +630,26 @@ export async function openDemoRuntime(options: {
     submit: control => admission(async () => {
       if (options.role !== 'coordinator') throw new Error('control_not_allowed');
       const checked = checkControl(control); const prior = recordFor(checked.id);
-      if (prior) { if (canonicalDemoJson(prior.command) !== canonicalDemoJson(checked.command)) throw new Error('control_conflict'); return clone(prior); }
+      if (prior) {
+        if (canonicalDemoJson(prior.command) !== canonicalDemoJson(checked.command)) throw new Error('control_conflict');
+        // Reposting an uncertain task with its exact durable ID is the explicit
+        // operator reconciliation action. Completed IDs remain pure local
+        // replay; other uncertain external controls are never auto-retried.
+        if (prior.state === 'uncertain' && checked.command.op === 'task') {
+          prior.state = 'running'; prior.code = null; prior.updated_at_ms = String(clock.nowMs()); publicationPending(); await persistJournal();
+          await emit({ role: 'host', conversation: options.conversation, request: null, type: 'control', data: { control: prior } }); publicationReady();
+          void finishControl(checked, prior, true).catch(() => {});
+        }
+        return clone(prior);
+      }
+      // Reject a new task before creating an accepted/running record. A
+      // closed, uncertain, exhausted, paused, or busy conversation is visibly
+      // unavailable to the operator; it must not fail asynchronously after a
+      // misleading 202 response.
+      if (checked.command.op === 'task') {
+        const blocked = taskAdmissionBlock();
+        if (blocked) throw new Error(blocked);
+      }
       const channel = checked.command.op === 'fund' || checked.command.op === 'close' || checked.command.op === 'refund' ? (checked.command.op === 'fund' ? checked.command.previous_channel : checked.command.channel) : null;
       const accepted: DemoControlRecord = { version: 1, id: checked.id, command: clone(checked.command), state: 'accepted', code: null, accepted_at_ms: String(clock.nowMs()), updated_at_ms: String(clock.nowMs()), task: checked.command.op === 'task' ? checked.id : checked.command.op === 'cancel' ? checked.command.task : null, channel };
       publicationPending(); journal.controls.push(accepted); await persistJournal(); await emit({ role: 'host', conversation: options.conversation, request: null, type: 'control', data: { control: accepted } }); publicationReady();
