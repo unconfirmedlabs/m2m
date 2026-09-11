@@ -5,6 +5,11 @@ Status: architectural assessment and recommended work sequence. This document
 does not freeze a new wire format, authorize a deployment, or implement a core.
 Sui, Iroh, and the native foundational-standard direction remain requirements.
 
+The later [identity and naming recommendation](IDENTITY_AND_NAMING.md) explores
+separate communication/economic keys and SuiNS aliases resolving to Agent objects.
+It supplies design inputs and upstream evidence for the identity work below;
+its proposed policy is not yet a frozen core or payment binding.
+
 ## Assessment
 
 The concern is supported by the code: m2m has working payment applications and

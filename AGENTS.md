@@ -18,6 +18,7 @@ must not require an LLM or a particular agent framework.
 - [North star](docs/NORTH_STAR.md): design principles and architectural boundaries.
 - [Positioning](docs/POSITIONING.md): problem hypothesis, alternatives, and open decisions.
 - [Foundation assessment and plan](docs/FOUNDATION_PLAN.md): current architectural gaps and recommended dependency order; proposed work, not a frozen core contract.
+- [Identity and naming recommendation](docs/IDENTITY_AND_NAMING.md): Agent/key separation, rotation, and an optional SuiNS-to-Agent binding; proposed design with checked upstream evidence.
 - [Message examples](examples/messages/README.md): every current wire message, with checked signatures and explicit implementation status.
 - [Core message proposal](docs/CORE_MESSAGE_PROPOSAL.md): draft native messaging foundation; not implemented or a released wire contract.
 - [PoC scope](docs/POC_SCOPE.md): first exchange, economic rule, deliverables, and validation targets.
