@@ -78,17 +78,11 @@ public fun replace_controller(agent: &mut Agent, controller: address, ctx: &TxCo
 }
 
 public fun domain_network(domain: &Domain): vector<u8> { domain.network }
-
 public fun domain_package(domain: &Domain): address { domain.package_id }
-
 public fun agent_deployment(agent: &Agent): ID { agent.deployment }
-
 public fun agent_controller(agent: &Agent): address { agent.controller }
-
 public fun agent_transport(agent: &Agent): vector<u8> { agent.transport_key }
-
 public fun agent_economic(agent: &Agent): vector<u8> { agent.economic_key }
-
 public fun agent_generation(agent: &Agent): u64 { agent.generation }
 
 public fun assert_live(agent: &Agent, clock: &Clock) {

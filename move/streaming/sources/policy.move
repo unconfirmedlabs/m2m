@@ -51,9 +51,7 @@ public fun publish(units: vector<vector<u8>>, rates: vector<u64>, denominator: u
 }
 
 public fun value(policy: &PricingPolicy): Policy { policy.policy }
-
 public fun commitment(policy: &Policy): vector<u8> { hash::blake2b256(&bcs::to_bytes(policy)) }
-
 public fun dimensions(policy: &Policy): u64 { policy.units.length() }
 
 public fun price(policy: &Policy, quantities: &vector<u64>): u64 {
