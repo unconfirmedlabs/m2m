@@ -193,12 +193,10 @@ fun open_verified(
     assert!(clock::timestamp_ms(clock) < terms.offer_expires_ms, EExpired);
     assert!(terms.claim_deadline_ms - clock::timestamp_ms(clock) <= MAX_LIFETIME_MS, EDeadline);
     assert!(coin::value(&payment) == terms.deposit, EAmount);
-
     // Check before adding so a duplicate nonce has the channel-specific abort
     // code rather than the framework dynamic-field error.
     let key = OpeningKey { nonce: terms.opening_nonce };
     assert!(!dynamic_field::exists(exchange::agent_uid_mut(buyer), key), ENonce);
-
     let channel = Channel {
         id: object::new(ctx),
         offer: terms,

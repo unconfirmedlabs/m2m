@@ -36,13 +36,11 @@ fun reconstructed_offer_credit_and_close_match_golden_vectors() {
         1_800_000_300_000, 1_800_000_360_000, OFFER_SIG,
     );
     assert!(offer_hash == OFFER_HASH);
-
     let credit_hash = channel::verify_credit_vector_test(
         NETWORK, PACKAGE, DEPLOYMENT, BUYER, PROVIDER, CHANNEL, OFFER_HASH,
         1, 1_000, REQUEST_HASH, TRANSCRIPT_START, BUYER_KEY, CREDIT_SIG,
     );
     assert!(credit_hash == CREDIT_HASH);
-
     let close_hash = channel::verify_close_vector_test(
         NETWORK, PACKAGE, DEPLOYMENT, BUYER, PROVIDER, CHANNEL, OFFER_HASH,
         1, 1_000, TRANSCRIPT_FINAL, BUYER_KEY, PROVIDER_KEY,

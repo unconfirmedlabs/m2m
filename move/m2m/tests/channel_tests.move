@@ -121,7 +121,6 @@ fun cumulative_redemption_pays_only_deltas_to_fixed_payee() {
     ts::return_shared(channel);
     ts::return_shared(clock);
     burn_sender_coin(&mut s, PROVIDER, 2_000);
-
     let mut channel = take_channel(&mut s);
     let clock = s.take_shared<Clock>();
     channel::redeem_test(&mut channel, 3, 5_000, REQUEST, ROOT, &clock, s.ctx());
@@ -157,7 +156,6 @@ fun higher_close_after_redemption_pays_increment_and_refunds_residual() {
     ts::return_shared(channel);
     ts::return_shared(clock);
     burn_sender_coin(&mut s, PROVIDER, 1_000);
-
     let mut channel = take_channel(&mut s);
     let clock = s.take_shared<Clock>();
     channel::close_test(&mut channel, 2, 2_000, ROOT, &clock, s.ctx());
