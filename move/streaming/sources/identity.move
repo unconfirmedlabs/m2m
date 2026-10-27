@@ -78,29 +78,40 @@ public fun replace_controller(agent: &mut Agent, controller: address, ctx: &TxCo
 }
 
 public fun domain_network(domain: &Domain): vector<u8> { domain.network }
+
 public fun domain_package(domain: &Domain): address { domain.package_id }
+
 public fun agent_deployment(agent: &Agent): ID { agent.deployment }
+
 public fun agent_controller(agent: &Agent): address { agent.controller }
+
 public fun agent_transport(agent: &Agent): vector<u8> { agent.transport_key }
+
 public fun agent_economic(agent: &Agent): vector<u8> { agent.economic_key }
+
 public fun agent_generation(agent: &Agent): u64 { agent.generation }
+
 public fun assert_live(agent: &Agent, clock: &Clock) {
     assert!(clock::timestamp_ms(clock) < agent.expires_ms, EExpiry);
 }
+
 public(package) fun agent_uid_mut(agent: &mut Agent): &mut UID { &mut agent.id }
 
 #[test_only]
 public fun domain_test(ctx: &mut TxContext): Domain {
     Domain { id: object::new(ctx), network: b"test", package_id: @m2m_streaming }
 }
+
 #[test_only]
 public fun agent_test(domain: &Domain, transport_key: vector<u8>, economic_key: vector<u8>, ctx: &mut TxContext): Agent {
     validate_keys(&transport_key, &economic_key);
     Agent { id: object::new(ctx), deployment: object::id(domain), controller: ctx.sender(),
         transport_key, economic_key, generation: 0, expires_ms: 100_000 }
 }
+
 #[test_only]
 public fun destroy_domain(domain: Domain) { let Domain { id, network: _, package_id: _ } = domain; id.delete() }
+
 #[test_only]
 public fun destroy_agent(agent: Agent) {
     let Agent { id, deployment: _, controller: _, transport_key: _, economic_key: _, generation: _, expires_ms: _ } = agent;

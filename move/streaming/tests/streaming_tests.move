@@ -27,15 +27,19 @@ fun independent_bcs_and_economic_signatures() {
     assert!(credit == x"8bcf66c1290b2f77affc8096b65891e666555fc0bf9fb2efee192bd610a735f1");
     assert!(checkpoint == x"5dfb97829cff23e4ae23780400c045361a22a2c1b62b64ce4982f907e02d3047");
 }
+
 #[test, expected_failure(abort_code = 3, location = m2m_streaming::channel)]
 fun wrong_network_signature() { channel::verify_vectors_test(b"wrong-network", PROVIDER_KEY, OFFER_SIG, CREDIT_SIG, CP_SIG); }
+
 #[test, expected_failure(abort_code = 3, location = m2m_streaming::channel)]
 fun wrong_role_signature() { channel::verify_vectors_test(b"test-vector", BUYER_KEY, OFFER_SIG, CREDIT_SIG, CP_SIG); }
+
 #[test, expected_failure(abort_code = 3, location = m2m_streaming::channel)]
 fun tampered_credit_signature() {
     let mut sig = CREDIT_SIG; *vector::borrow_mut(&mut sig, 0) = 0;
     channel::verify_vectors_test(b"test-vector", PROVIDER_KEY, OFFER_SIG, sig, CP_SIG);
 }
+
 #[test, expected_failure(abort_code = 3, location = m2m_streaming::channel)]
 fun tampered_checkpoint_signature() {
     let mut sig = CP_SIG; *vector::borrow_mut(&mut sig, 0) = 0;
@@ -56,15 +60,19 @@ fun bytes_records_and_multi_counter_round_once() {
     let boundary = policy::new(vector[b"bytes/v1"], vector[MAX], MAX);
     assert!(policy::price(&boundary, &vector[MAX]) == MAX);
 }
+
 #[test, expected_failure(abort_code = 1, location = m2m_streaming::policy)]
 fun duplicate_unit_rejected() { policy::new(vector[b"x", b"x"], vector[1, 2], 1); }
+
 #[test, expected_failure(abort_code = 0, location = m2m_streaming::policy)]
 fun zero_denominator_rejected() { policy::new(vector[b"x"], vector[1], 0); }
+
 #[test, expected_failure(abort_code = 2, location = m2m_streaming::policy)]
 fun u128_sum_overflow_rejected() {
     let p = policy::new(vector[b"x", b"y"], vector[MAX, MAX], MAX);
     policy::price(&p, &vector[MAX, MAX]);
 }
+
 #[test, expected_failure(abort_code = 2, location = m2m_streaming::policy)]
 fun u64_amount_overflow_rejected() {
     let p = policy::new(vector[b"x"], vector[2], 1);
@@ -76,12 +84,14 @@ fun fixture(s: &mut Scenario): (Channel, Clock) {
     let c = channel::test_channel(p, 1000, KEY1, KEY2, s.ctx());
     (c, clock::create_for_testing(s.ctx()))
 }
+
 fun burn(s: &mut Scenario, owner: address, amount: u64) {
     s.next_tx(owner);
     let coin = s.take_from_sender<Coin<SUI>>();
     assert!(coin::value(&coin) == amount);
     coin::burn_for_testing(coin);
 }
+
 fun state(channel: &Channel, funds: u64, redeemed: u64, status: u8) {
     let (f, r, s) = channel::state(channel);
     assert!(f == funds && r == redeemed && s == status);
@@ -98,6 +108,7 @@ fun exact_close_uses_delivered_price_and_conserves_funds() {
     channel::destroy_test(channel); clock::destroy_for_testing(clock);
     burn(&mut s, @0xc, 8); burn(&mut s, @0xb, 992); s.end();
 }
+
 #[test]
 fun free_channel_exact_close_refunds_entire_deposit() {
     let mut s = ts::begin(@0xb);
@@ -111,6 +122,7 @@ fun free_channel_exact_close_refunds_entire_deposit() {
     channel::destroy_test(channel); clock::destroy_for_testing(clock);
     burn(&mut s, @0xb, 1000); s.end();
 }
+
 #[test, expected_failure(abort_code = 2, location = m2m_streaming::channel)]
 fun public_redemption_rejects_credit_for_another_channel_before_signature() {
     let mut s = ts::begin(@0xb); let (first, clock) = fixture(&mut s);
@@ -120,6 +132,7 @@ fun public_redemption_rejects_credit_for_another_channel_before_signature() {
     channel::destroy_test(first); channel::destroy_test(second);
     clock::destroy_for_testing(clock); clock::destroy_for_testing(other_clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 1, location = m2m_streaming::channel)]
 fun public_redemption_requires_signature_bytes() {
     let mut s = ts::begin(@0xb); let (mut channel, clock) = fixture(&mut s);
@@ -127,6 +140,7 @@ fun public_redemption_requires_signature_bytes() {
     channel::redeem(&mut channel, c, vector[], &clock, s.ctx());
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test]
 fun cumulative_redemption_pays_delta_then_refunds_only_residual_at_deadline() {
     let mut s = ts::begin(@0xb);
@@ -143,6 +157,7 @@ fun cumulative_redemption_pays_delta_then_refunds_only_residual_at_deadline() {
     channel::destroy_test(channel); clock::destroy_for_testing(clock);
     burn(&mut s, @0xc, 27); burn(&mut s, @0xc, 27); burn(&mut s, @0xb, 946); s.end();
 }
+
 #[test]
 fun exact_close_after_redemption_pays_only_higher_actual_delta() {
     let mut s = ts::begin(@0xb);
@@ -156,6 +171,7 @@ fun exact_close_after_redemption_pays_only_higher_actual_delta() {
     channel::destroy_test(channel); clock::destroy_for_testing(clock);
     burn(&mut s, @0xc, 16); burn(&mut s, @0xc, 27); burn(&mut s, @0xb, 957); s.end();
 }
+
 #[test, expected_failure(abort_code = 5, location = m2m_streaming::channel)]
 fun exact_close_cannot_claw_back_redeemed_advance() {
     let mut s = ts::begin(@0xb); let (mut channel, clock) = fixture(&mut s);
@@ -165,6 +181,7 @@ fun exact_close_cannot_claw_back_redeemed_advance() {
     channel::close_test(&mut channel, c, cp, &clock, s.ctx());
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 9, location = m2m_streaming::channel)]
 fun duplicate_redemption_cannot_pay_twice() {
     let mut s = ts::begin(@0xb); let (mut channel, clock) = fixture(&mut s);
@@ -172,18 +189,21 @@ fun duplicate_redemption_cannot_pay_twice() {
     channel::redeem_test(&mut channel, c, &clock, s.ctx()); channel::redeem_test(&mut channel, c, &clock, s.ctx());
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 5, location = m2m_streaming::channel)]
 fun amount_must_match_policy() {
     let mut s = ts::begin(@0xb); let (channel, clock) = fixture(&mut s);
     channel::credit(&channel, 1, 1, KEY1, ZERO, vector[10, 100], 28);
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 5, location = m2m_streaming::channel)]
 fun credit_cannot_exceed_deposit() {
     let mut s = ts::begin(@0xb); let (channel, clock) = fixture(&mut s);
     channel::credit(&channel, 1, 1, KEY1, ZERO, vector[10000, 10000], 9000);
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 5, location = m2m_streaming::channel)]
 fun checkpoint_cannot_exceed_units() {
     let mut s = ts::begin(@0xb); let (channel, clock) = fixture(&mut s);
@@ -191,6 +211,7 @@ fun checkpoint_cannot_exceed_units() {
     channel::checkpoint(&channel, &c, vector[11, 100], 28, KEY2, true);
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 4, location = m2m_streaming::channel)]
 fun redemption_at_claim_deadline_rejected() {
     let mut s = ts::begin(@0xb); let (mut channel, mut clock) = fixture(&mut s);
@@ -198,12 +219,14 @@ fun redemption_at_claim_deadline_rejected() {
     clock::set_for_testing(&mut clock, 12000);channel::redeem_test(&mut channel, c, &clock, s.ctx());
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 8, location = m2m_streaming::channel)]
 fun early_refund_rejected() {
     let mut s = ts::begin(@0xb); let (mut channel, clock) = fixture(&mut s);
     channel::refund(&mut channel, &clock, s.ctx());
     channel::destroy_test(channel); clock::destroy_for_testing(clock); s.end();
 }
+
 #[test, expected_failure(abort_code = 11, location = m2m_streaming::channel)]
 fun nonfinal_checkpoint_cannot_close() {
     let mut s = ts::begin(@0xb); let (mut channel, clock) = fixture(&mut s);
@@ -224,6 +247,7 @@ fun setup_agents(): (Scenario, ID, ID) {
     s.next_tx(@0xb); let provider = ts::most_recent_id_shared<Agent>().destroy_some();
     (s, buyer, provider)
 }
+
 fun open_fixture(s: &mut Scenario, buyer: ID, provider: ID) {
     let d = s.take_immutable<Domain>();let mut b = s.take_shared_by_id<Agent>(buyer);let p = s.take_shared_by_id<Agent>(provider);
     let clock = s.take_shared<Clock>();let coins = coin::mint_for_testing<SUI>(1000, s.ctx());
@@ -231,10 +255,12 @@ fun open_fixture(s: &mut Scenario, buyer: ID, provider: ID) {
     assert!(channel::opening_exists_test(&mut b, ZERO));
     ts::return_immutable(d);ts::return_shared(b);ts::return_shared(p);ts::return_shared(clock);
 }
+
 #[test, expected_failure(abort_code = 6, location = m2m_streaming::channel)]
 fun duplicate_opening_nonce_rejected() {
     let (mut s, b, p) = setup_agents(); open_fixture(&mut s, b, p);s.next_tx(@0xb);open_fixture(&mut s, b, p);s.end();
 }
+
 #[test]
 fun rotation_preserves_funded_keys_and_terminal_nonce() {
     let (mut s, b, p) = setup_agents();open_fixture(&mut s, b, p);s.next_tx(@0xb);
@@ -252,17 +278,20 @@ fun rotation_preserves_funded_keys_and_terminal_nonce() {
     ts::return_shared(buyer);ts::return_shared(channel);ts::return_shared(clock);
     burn(&mut s, @0xb, 1000);s.end();
 }
+
 #[test, expected_failure(abort_code = 1, location = m2m_streaming::identity)]
 fun transport_and_economic_keys_must_differ() {
     let mut ctx = tx_context::dummy();let d = identity::domain_test(&mut ctx);
     let a = identity::agent_test(&d, KEY1, KEY1, &mut ctx);identity::destroy_agent(a);identity::destroy_domain(d);
 }
+
 #[test, expected_failure(abort_code = 0, location = m2m_streaming::identity)]
 fun unauthorized_rotation_rejected() {
     let (mut s, b, _) = setup_agents();s.next_tx(@0xc);let mut buyer = s.take_shared_by_id<Agent>(b);let clock = s.take_shared<Clock>();
     identity::replace_transport(&mut buyer, KEY3, 100000, &clock, s.ctx());
     ts::return_shared(buyer);ts::return_shared(clock);s.end();
 }
+
 #[test]
 fun controller_transfer_changes_mutation_authority() {
     let (mut s, b, _) = setup_agents();let mut buyer = s.take_shared_by_id<Agent>(b);

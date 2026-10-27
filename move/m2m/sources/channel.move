@@ -26,7 +26,6 @@ const ETerminal: u64 = 7;
 const ETooEarly: u64 = 8;
 const ESequence: u64 = 9;
 const EDeadline: u64 = 10;
-
 const OPEN: u8 = 0;
 const CLOSED: u8 = 1;
 const REFUNDED: u8 = 2;

@@ -17,6 +17,7 @@ public struct Policy has copy, drop, store {
     rates: vector<u64>,
     denominator: u64,
 }
+
 public struct PricingPolicy has key, store { id: UID, policy: Policy }
 
 public fun new(units: vector<vector<u8>>, rates: vector<u64>, denominator: u64): Policy {
@@ -48,8 +49,11 @@ public fun validate(value: &Policy) {
 public fun publish(units: vector<vector<u8>>, rates: vector<u64>, denominator: u64, ctx: &mut TxContext) {
     transfer::freeze_object(PricingPolicy { id: object::new(ctx), policy: new(units, rates, denominator) });
 }
+
 public fun value(policy: &PricingPolicy): Policy { policy.policy }
+
 public fun commitment(policy: &Policy): vector<u8> { hash::blake2b256(&bcs::to_bytes(policy)) }
+
 public fun dimensions(policy: &Policy): u64 { policy.units.length() }
 
 public fun price(policy: &Policy, quantities: &vector<u64>): u64 {

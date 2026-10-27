@@ -34,6 +34,7 @@ public struct Offer has copy, drop, store {
     opening_nonce: vector<u8>, policy_hash: vector<u8>, deposit: u64,
     offer_expires_ms: u64, work_deadline_ms: u64, claim_deadline_ms: u64,
 }
+
 public struct Credit has copy, drop, store {
     purpose: vector<u8>, method: vector<u8>, version: u8, network: vector<u8>,
     package_id: address, deployment: address, buyer: address, provider: address,
@@ -41,6 +42,7 @@ public struct Credit has copy, drop, store {
     request_hash: vector<u8>, previous_checkpoint: vector<u8>, units: vector<u64>,
     cumulative_amount: u64,
 }
+
 public struct Checkpoint has copy, drop, store {
     purpose: vector<u8>, method: vector<u8>, version: u8, network: vector<u8>,
     package_id: address, deployment: address, buyer: address, provider: address,
@@ -48,6 +50,7 @@ public struct Checkpoint has copy, drop, store {
     request_sequence: u64, request_hash: vector<u8>, previous_checkpoint: vector<u8>,
     units: vector<u64>, cumulative_amount: u64, output_hash: vector<u8>, final: bool,
 }
+
 public struct Channel has key {
     id: UID, offer: Offer, policy: Policy, funds: Balance<SUI>,
     redeemed_amount: u64, redeemed_sequence: u64, redeemed_units: vector<u64>,
@@ -171,6 +174,7 @@ fun assert_open(channel: &Channel, clock: &Clock) {
 fun pay(channel: &mut Channel, amount: u64, ctx: &mut TxContext) {
     if (amount > 0) transfer::public_transfer(coin::from_balance(balance::split(&mut channel.funds, amount), ctx), channel.offer.payee);
 }
+
 fun return_residual(channel: &mut Channel, ctx: &mut TxContext) {
     let residual = balance::withdraw_all(&mut channel.funds);
     if (balance::value(&residual) > 0) transfer::public_transfer(coin::from_balance(residual, ctx), channel.offer.refund)
@@ -235,6 +239,7 @@ public fun open_test(domain: &Domain, buyer: &mut Agent, provider: &Agent, payme
     let terms = offer(domain, buyer, provider, &policy, nonce, coin::value(&payment), 1000, 2000, 12_000);
     open_verified(buyer, payment, terms, policy, clock, ctx);
 }
+
 #[test_only]
 public fun test_channel(policy: Policy, deposit: u64, buyer_key: vector<u8>, provider_key: vector<u8>, ctx: &mut TxContext): Channel {
     let mut redeemed_units = vector[];
@@ -248,12 +253,16 @@ public fun test_channel(policy: Policy, deposit: u64, buyer_key: vector<u8>, pro
     }, policy, funds: coin::into_balance(coin::mint_for_testing<SUI>(deposit, ctx)),
         redeemed_amount: 0, redeemed_sequence: 0, redeemed_units, status: 0, terminal_tx: vector[], close_hash: vector[] }
 }
+
 #[test_only]
 public fun redeem_test(channel: &mut Channel, credit: Credit, clock: &Clock, ctx: &mut TxContext) { redeem_verified(channel, credit, clock, ctx) }
+
 #[test_only]
 public fun close_test(channel: &mut Channel, credit: Credit, checkpoint: Checkpoint, clock: &Clock, ctx: &mut TxContext) { close_verified(channel, credit, checkpoint, clock, ctx) }
+
 #[test_only]
 public fun state(channel: &Channel): (u64, u64, u8) { (balance::value(&channel.funds), channel.redeemed_amount, channel.status) }
+
 #[test_only]
 public fun destroy_test(channel: Channel) {
     let Channel { id, offer: _, policy: _, funds, redeemed_amount: _, redeemed_sequence: _, redeemed_units: _, status: _, terminal_tx: _, close_hash: _ } = channel;
@@ -311,5 +320,6 @@ public fun verify_vectors_test(
 public fun opening_exists_test(buyer: &mut Agent, nonce: vector<u8>): bool {
     dynamic_field::exists(identity::agent_uid_mut(buyer), OpeningKey { nonce })
 }
+
 #[test_only]
 public fun channel_keys_test(channel: &Channel): (vector<u8>, vector<u8>) { (channel.offer.buyer_key, channel.offer.provider_key) }
